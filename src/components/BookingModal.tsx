@@ -4,11 +4,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight, Calendar, Users, Clock, CheckCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 import DateSelector from '@/components/DateSelector';
 import PartySizeSelector from '@/components/PartySizeSelector';
 import TimeSlotSelector from '@/components/TimeSlotSelector';
 import CustomerForm from '@/components/CustomerForm';
 import BookingConfirmation from '@/components/BookingConfirmation';
+import { createBooking } from '@/services/supabaseBookingService';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -37,6 +39,8 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [bookingData, setBookingData] = useState<Partial<BookingData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [confirmationData, setConfirmationData] = useState<any>(null);
+  const { toast } = useToast();
 
   const handleNext = () => {
     if (currentStep < steps.length) {
@@ -54,6 +58,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     setCurrentStep(1);
     setBookingData({});
     setIsSubmitting(false);
+    setConfirmationData(null);
     onClose();
   };
 
@@ -77,11 +82,50 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleSubmit = async () => {
+    if (!bookingData.date || !bookingData.startTime || !bookingData.partySize || 
+        !bookingData.customerName || !bookingData.customerEmail) {
+      toast({
+        title: "Missing Information",
+        description: "Please fill in all required fields",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    setCurrentStep(5);
-    setIsSubmitting(false);
+    
+    try {
+      console.log('Submitting booking with data:', bookingData);
+      
+      const result = await createBooking({
+        date: bookingData.date,
+        startTime: bookingData.startTime,
+        partySize: bookingData.partySize,
+        customerName: bookingData.customerName,
+        customerEmail: bookingData.customerEmail,
+        customerPhone: bookingData.customerPhone,
+        specialRequests: bookingData.specialRequests
+      });
+      
+      console.log('Booking created successfully:', result);
+      setConfirmationData(result);
+      setCurrentStep(5);
+      
+      toast({
+        title: "Booking Confirmed!",
+        description: "Your table reservation has been successfully created.",
+      });
+      
+    } catch (error) {
+      console.error('Error creating booking:', error);
+      toast({
+        title: "Booking Failed",
+        description: error instanceof Error ? error.message : "There was an error creating your booking. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const renderStepContent = () => {
@@ -195,7 +239,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
                 disabled={!canProceed() || isSubmitting}
                 className="bg-amber-600 hover:bg-amber-700 flex items-center"
               >
-                {isSubmitting ? 'Submitting...' : 'Confirm Booking'}
+                {isSubmitting ? 'Creating Booking...' : 'Confirm Booking'}
               </Button>
             ) : (
               <Button

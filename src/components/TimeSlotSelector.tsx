@@ -3,8 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Clock, AlertCircle } from 'lucide-react';
-import { format, addMinutes, isAfter, isBefore, parseISO } from 'date-fns';
-import { getAvailableTimeSlots } from '@/utils/bookingUtils';
+import { format, addMinutes, parseISO } from 'date-fns';
+import { getAvailableTimeSlots } from '@/services/supabaseBookingService';
 
 interface TimeSlotSelectorProps {
   date: Date;
@@ -21,15 +21,20 @@ const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
 }) => {
   const [availableSlots, setAvailableSlots] = useState<{time: string, available: boolean, tableSize?: number}[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadAvailableSlots = async () => {
       setLoading(true);
+      setError(null);
       try {
+        console.log('Loading available slots for:', { date, partySize });
         const slots = await getAvailableTimeSlots(date, partySize);
+        console.log('Available slots loaded:', slots);
         setAvailableSlots(slots);
       } catch (error) {
         console.error('Error loading time slots:', error);
+        setError('Failed to load available time slots');
       } finally {
         setLoading(false);
       }
@@ -56,6 +61,20 @@ const TimeSlotSelector: React.FC<TimeSlotSelectorProps> = ({
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
         <span className="ml-3 text-gray-600">Loading available times...</span>
       </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-red-50 border-red-200">
+        <CardContent className="p-6 text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-medium text-red-800 mb-2">
+            Error Loading Times
+          </h3>
+          <p className="text-red-600">{error}</p>
+        </CardContent>
+      </Card>
     );
   }
 

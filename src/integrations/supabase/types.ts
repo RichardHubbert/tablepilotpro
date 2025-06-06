@@ -9,6 +9,62 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bookings: {
+        Row: {
+          booking_date: string
+          created_at: string
+          customer_email: string
+          customer_name: string
+          customer_phone: string | null
+          end_time: string
+          id: string
+          party_size: number
+          special_requests: string | null
+          start_time: string
+          status: string
+          table_id: string
+          updated_at: string
+        }
+        Insert: {
+          booking_date: string
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          customer_phone?: string | null
+          end_time: string
+          id?: string
+          party_size: number
+          special_requests?: string | null
+          start_time: string
+          status?: string
+          table_id: string
+          updated_at?: string
+        }
+        Update: {
+          booking_date?: string
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          customer_phone?: string | null
+          end_time?: string
+          id?: string
+          party_size?: number
+          special_requests?: string | null
+          start_time?: string
+          status?: string
+          table_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_table_id_fkey"
+            columns: ["table_id"]
+            isOneToOne: false
+            referencedRelation: "tables"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       competitor_analysis: {
         Row: {
           analyzed_at: string | null
@@ -473,6 +529,33 @@ export type Database = {
           name?: string
           price_per_hour?: number
           updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tables: {
+        Row: {
+          capacity: number
+          created_at: string
+          id: string
+          name: string
+          section: string
+          updated_at: string
+        }
+        Insert: {
+          capacity: number
+          created_at?: string
+          id?: string
+          name: string
+          section: string
+          updated_at?: string
+        }
+        Update: {
+          capacity?: number
+          created_at?: string
+          id?: string
+          name?: string
+          section?: string
+          updated_at?: string
         }
         Relationships: []
       }
