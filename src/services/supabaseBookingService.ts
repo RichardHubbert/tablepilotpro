@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { format, addMinutes, isSameDay } from 'date-fns';
 
@@ -26,6 +25,7 @@ export interface Booking {
 
 // Fetch all tables from Supabase
 export const fetchTables = async (): Promise<Table[]> => {
+  console.log('Fetching tables from Supabase...');
   const { data, error } = await supabase
     .from('tables')
     .select('*')
@@ -36,12 +36,14 @@ export const fetchTables = async (): Promise<Table[]> => {
     throw error;
   }
   
+  console.log('Tables fetched successfully:', data);
   return data || [];
 };
 
 // Fetch bookings for a specific date
 export const fetchBookingsForDate = async (date: Date): Promise<Booking[]> => {
   const dateString = format(date, 'yyyy-MM-dd');
+  console.log('Fetching bookings for date:', dateString);
   
   const { data, error } = await supabase
     .from('bookings')
@@ -54,6 +56,7 @@ export const fetchBookingsForDate = async (date: Date): Promise<Booking[]> => {
     throw error;
   }
   
+  console.log('Bookings fetched for date:', dateString, data);
   // Cast the data to ensure proper typing for status field
   return (data || []).map(booking => ({
     ...booking,
@@ -164,11 +167,15 @@ export const createBooking = async (bookingData: {
   customerPhone?: string;
   specialRequests?: string;
 }): Promise<Booking> => {
+  console.log('Creating booking with data:', bookingData);
+  
   const optimalTable = await getOptimalTable(bookingData.partySize);
   
   if (!optimalTable) {
     throw new Error('No suitable table available');
   }
+  
+  console.log('Optimal table found:', optimalTable);
   
   // Calculate end time
   const [hours, minutes] = bookingData.startTime.split(':').map(Number);
@@ -190,6 +197,8 @@ export const createBooking = async (bookingData: {
     special_requests: bookingData.specialRequests
   };
   
+  console.log('Inserting booking data into Supabase:', newBookingData);
+  
   const { data, error } = await supabase
     .from('bookings')
     .insert(newBookingData)
@@ -197,9 +206,11 @@ export const createBooking = async (bookingData: {
     .single();
   
   if (error) {
-    console.error('Error creating booking:', error);
+    console.error('Error creating booking in Supabase:', error);
     throw error;
   }
+  
+  console.log('Booking created successfully in Supabase:', data);
   
   // Cast the returned data to ensure proper typing
   return {
@@ -210,6 +221,7 @@ export const createBooking = async (bookingData: {
 
 // Fetch all bookings (for admin dashboard)
 export const fetchAllBookings = async (): Promise<Booking[]> => {
+  console.log('Fetching all bookings from Supabase...');
   const { data, error } = await supabase
     .from('bookings')
     .select('*')
@@ -221,6 +233,7 @@ export const fetchAllBookings = async (): Promise<Booking[]> => {
     throw error;
   }
   
+  console.log('All bookings fetched:', data);
   // Cast the data to ensure proper typing for status field
   return (data || []).map(booking => ({
     ...booking,

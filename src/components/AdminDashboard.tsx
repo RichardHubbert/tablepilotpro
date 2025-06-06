@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { format, isSameDay } from 'date-fns';
 import { Calendar, Users, Clock, MapPin, Phone, Mail } from 'lucide-react';
@@ -6,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { fetchTables, fetchAllBookings, type Table as TableType, type Booking } from '@/utils/bookingUtils';
+import { fetchTables, fetchAllBookings, type Table as TableType, type Booking } from '@/services/supabaseBookingService';
 
 const AdminDashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -19,10 +18,13 @@ const AdminDashboard = () => {
     const loadData = async () => {
       try {
         setLoading(true);
+        console.log('Loading admin dashboard data...');
         const [tablesData, bookingsData] = await Promise.all([
           fetchTables(),
           fetchAllBookings()
         ]);
+        console.log('Tables loaded:', tablesData);
+        console.log('Bookings loaded:', bookingsData);
         setTables(tablesData);
         setAllBookings(bookingsData);
       } catch (err) {
