@@ -10,6 +10,17 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      {/* Add admin link in top navigation */}
+      <div className="absolute top-4 right-4 z-10">
+        <Button 
+          variant="outline" 
+          size="sm"
+          onClick={() => window.location.href = '/admin'}
+        >
+          Admin Dashboard
+        </Button>
+      </div>
+
       {/* Hero Section */}
       <section className="relative bg-gradient-to-br from-amber-50 to-orange-100 min-h-[70vh] flex items-center">
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">

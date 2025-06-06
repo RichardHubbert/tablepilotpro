@@ -24,7 +24,7 @@ export interface Booking {
 }
 
 // Updated mock tables data - 10 tables total: 4 for 2 people, 4 for 4 people, 2 for 6 people
-const mockTables: Table[] = [
+export const mockTables: Table[] = [
   // 4 tables for 2 people
   { id: 1, name: 'Table 1', capacity: 2, section: 'Window' },
   { id: 2, name: 'Table 2', capacity: 2, section: 'Window' },
@@ -41,27 +41,54 @@ const mockTables: Table[] = [
 ];
 
 // Mock bookings data (some existing bookings for demo)
-const mockBookings: Booking[] = [
+export const mockBookings: Booking[] = [
   {
     id: 1,
     tableId: 1,
     customerName: 'John Doe',
     customerEmail: 'john@example.com',
+    customerPhone: '(555) 123-4567',
     bookingDate: new Date(),
     startTime: '18:00',
     endTime: '20:30',
     partySize: 2,
-    status: 'confirmed'
+    status: 'confirmed',
+    specialRequests: 'Window seat please'
   },
   {
     id: 2,
-    tableId: 3,
+    tableId: 5,
     customerName: 'Jane Smith',
     customerEmail: 'jane@example.com',
+    customerPhone: '(555) 234-5678',
     bookingDate: new Date(),
     startTime: '19:00',
     endTime: '21:30',
     partySize: 4,
+    status: 'confirmed'
+  },
+  {
+    id: 3,
+    tableId: 9,
+    customerName: 'Bob Johnson',
+    customerEmail: 'bob@example.com',
+    customerPhone: '(555) 345-6789',
+    bookingDate: new Date(),
+    startTime: '17:30',
+    endTime: '20:00',
+    partySize: 6,
+    status: 'confirmed',
+    specialRequests: 'Celebrating anniversary - please prepare something special'
+  },
+  {
+    id: 4,
+    tableId: 3,
+    customerName: 'Alice Brown',
+    customerEmail: 'alice@example.com',
+    bookingDate: new Date(),
+    startTime: '12:00',
+    endTime: '14:30',
+    partySize: 2,
     status: 'confirmed'
   }
 ];
