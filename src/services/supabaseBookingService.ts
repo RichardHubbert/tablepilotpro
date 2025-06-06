@@ -54,7 +54,11 @@ export const fetchBookingsForDate = async (date: Date): Promise<Booking[]> => {
     throw error;
   }
   
-  return data || [];
+  // Cast the data to ensure proper typing for status field
+  return (data || []).map(booking => ({
+    ...booking,
+    status: booking.status as 'confirmed' | 'cancelled' | 'completed'
+  }));
 };
 
 // Generate time slots from 11:00 AM to 7:30 PM (every 30 minutes)
@@ -197,7 +201,11 @@ export const createBooking = async (bookingData: {
     throw error;
   }
   
-  return data;
+  // Cast the returned data to ensure proper typing
+  return {
+    ...data,
+    status: data.status as 'confirmed' | 'cancelled' | 'completed'
+  };
 };
 
 // Fetch all bookings (for admin dashboard)
@@ -213,5 +221,9 @@ export const fetchAllBookings = async (): Promise<Booking[]> => {
     throw error;
   }
   
-  return data || [];
+  // Cast the data to ensure proper typing for status field
+  return (data || []).map(booking => ({
+    ...booking,
+    status: booking.status as 'confirmed' | 'cancelled' | 'completed'
+  }));
 };

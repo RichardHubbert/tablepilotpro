@@ -1,26 +1,71 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { format, isSameDay } from 'date-fns';
 import { Calendar, Users, Clock, MapPin, Phone, Mail } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { mockTables, mockBookings, type Table as TableType, type Booking } from '@/utils/bookingUtils';
+import { fetchTables, fetchAllBookings, type Table as TableType, type Booking } from '@/utils/bookingUtils';
 
 const AdminDashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [tables, setTables] = useState<TableType[]>([]);
+  const [allBookings, setAllBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [tablesData, bookingsData] = await Promise.all([
+          fetchTables(),
+          fetchAllBookings()
+        ]);
+        setTables(tablesData);
+        setAllBookings(bookingsData);
+      } catch (err) {
+        console.error('Error loading dashboard data:', err);
+        setError('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadData();
+  }, []);
 
   // Get bookings for selected date
-  const dayBookings = mockBookings.filter(booking => 
-    isSameDay(booking.bookingDate, selectedDate)
+  const dayBookings = allBookings.filter(booking => 
+    isSameDay(new Date(booking.booking_date), selectedDate)
   );
 
   // Get table status for selected date
   const getTableStatus = (table: TableType) => {
-    const tableBookings = dayBookings.filter(booking => booking.tableId === table.id);
+    const tableBookings = dayBookings.filter(booking => booking.table_id === table.id);
     return tableBookings;
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600"></div>
+        <span className="ml-3 text-gray-600">Loading dashboard...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-4 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-600 mb-2">Error Loading Dashboard</h2>
+          <p className="text-gray-600">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 p-4">
@@ -52,7 +97,7 @@ const AdminDashboard = () => {
                   <Users className="h-5 w-5 text-blue-500" />
                   <div>
                     <p className="text-sm text-gray-600">Total Tables</p>
-                    <p className="text-2xl font-bold">{mockTables.length}</p>
+                    <p className="text-2xl font-bold">{tables.length}</p>
                   </div>
                 </div>
               </CardContent>
@@ -76,7 +121,7 @@ const AdminDashboard = () => {
                   <Clock className="h-5 w-5 text-orange-500" />
                   <div>
                     <p className="text-sm text-gray-600">Available Tables</p>
-                    <p className="text-2xl font-bold">{mockTables.length - dayBookings.length}</p>
+                    <p className="text-2xl font-bold">{tables.length - dayBookings.length}</p>
                   </div>
                 </div>
               </CardContent>
@@ -89,7 +134,7 @@ const AdminDashboard = () => {
                   <div>
                     <p className="text-sm text-gray-600">Total Guests</p>
                     <p className="text-2xl font-bold">
-                      {dayBookings.reduce((sum, booking) => sum + booking.partySize, 0)}
+                      {dayBookings.reduce((sum, booking) => sum + booking.party_size, 0)}
                     </p>
                   </div>
                 </div>
@@ -107,7 +152,7 @@ const AdminDashboard = () => {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {mockTables.map(table => {
+                {tables.map(table => {
                   const bookings = getTableStatus(table);
                   const isBooked = bookings.length > 0;
                   
@@ -137,9 +182,9 @@ const AdminDashboard = () => {
                         </div>
                         {bookings.map(booking => (
                           <div key={booking.id} className="mt-2 p-2 bg-white rounded border">
-                            <p className="font-medium text-xs">{booking.customerName}</p>
+                            <p className="font-medium text-xs">{booking.customer_name}</p>
                             <p className="text-xs text-gray-500">
-                              {booking.startTime} - {booking.endTime} ({booking.partySize} guests)
+                              {booking.start_time} - {booking.end_time} ({booking.party_size} guests)
                             </p>
                           </div>
                         ))}
@@ -166,42 +211,42 @@ const AdminDashboard = () => {
               ) : (
                 <div className="space-y-4">
                   {dayBookings.map(booking => {
-                    const table = mockTables.find(t => t.id === booking.tableId);
+                    const table = tables.find(t => t.id === booking.table_id);
                     return (
                       <div key={booking.id} className="border rounded-lg p-4 space-y-3">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-semibold">{booking.customerName}</h4>
+                            <h4 className="font-semibold">{booking.customer_name}</h4>
                             <p className="text-sm text-gray-600">
                               {table?.name} ({table?.capacity} capacity) - {table?.section}
                             </p>
                           </div>
                           <Badge variant="outline">
-                            {booking.partySize} {booking.partySize === 1 ? 'guest' : 'guests'}
+                            {booking.party_size} {booking.party_size === 1 ? 'guest' : 'guests'}
                           </Badge>
                         </div>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                           <div className="flex items-center space-x-2">
                             <Clock className="h-4 w-4 text-gray-400" />
-                            <span>{booking.startTime} - {booking.endTime}</span>
+                            <span>{booking.start_time} - {booking.end_time}</span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <Mail className="h-4 w-4 text-gray-400" />
-                            <span className="truncate">{booking.customerEmail}</span>
+                            <span className="truncate">{booking.customer_email}</span>
                           </div>
-                          {booking.customerPhone && (
+                          {booking.customer_phone && (
                             <div className="flex items-center space-x-2">
                               <Phone className="h-4 w-4 text-gray-400" />
-                              <span>{booking.customerPhone}</span>
+                              <span>{booking.customer_phone}</span>
                             </div>
                           )}
                         </div>
                         
-                        {booking.specialRequests && (
+                        {booking.special_requests && (
                           <div className="text-sm bg-amber-50 border border-amber-200 rounded p-2">
                             <p className="font-medium text-amber-800">Special Requests:</p>
-                            <p className="text-amber-700">{booking.specialRequests}</p>
+                            <p className="text-amber-700">{booking.special_requests}</p>
                           </div>
                         )}
                       </div>
