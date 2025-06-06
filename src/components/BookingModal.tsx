@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -84,6 +83,13 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   const handleSubmit = async () => {
     if (!bookingData.date || !bookingData.startTime || !bookingData.partySize || 
         !bookingData.customerName || !bookingData.customerEmail) {
+      console.error('❌ Missing required booking data:', {
+        hasDate: !!bookingData.date,
+        hasStartTime: !!bookingData.startTime,
+        hasPartySize: !!bookingData.partySize,
+        hasCustomerName: !!bookingData.customerName,
+        hasCustomerEmail: !!bookingData.customerEmail
+      });
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields",
@@ -93,9 +99,24 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     }
 
     setIsSubmitting(true);
+    console.log('🎯 Starting booking submission process...');
+    console.log('📱 Device info:', {
+      userAgent: navigator.userAgent,
+      screenSize: `${screen.width}x${screen.height}`,
+      windowSize: `${window.innerWidth}x${window.innerHeight}`,
+      onLine: navigator.onLine,
+      connection: (navigator as any).connection ? {
+        effectiveType: (navigator as any).connection.effectiveType,
+        downlink: (navigator as any).connection.downlink,
+        rtt: (navigator as any).connection.rtt
+      } : 'Not available'
+    });
     
     try {
-      console.log('Submitting booking with data:', bookingData);
+      console.log('📝 Submitting booking with data:', {
+        ...bookingData,
+        date: bookingData.date.toISOString()
+      });
       
       const result = await createBooking({
         date: bookingData.date,
@@ -107,7 +128,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
         specialRequests: bookingData.specialRequests
       });
       
-      console.log('Booking created successfully:', result);
+      console.log('🎉 Booking submission successful!', result);
       setConfirmationData(result);
       setCurrentStep(5);
       
@@ -117,10 +138,30 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       });
       
     } catch (error) {
-      console.error('Error creating booking:', error);
+      console.error('💥 Booking submission failed:', error);
+      console.error('🔍 Error details:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : 'No stack trace',
+        type: typeof error,
+        timestamp: new Date().toISOString()
+      });
+      
+      // Show different error messages based on the type of error
+      let errorMessage = "There was an error creating your booking. Please try again.";
+      
+      if (error instanceof Error) {
+        if (error.message.includes('connection') || error.message.includes('network')) {
+          errorMessage = "Network connection issue. Please check your internet connection and try again.";
+        } else if (error.message.includes('timeout')) {
+          errorMessage = "Request timed out. Please try again.";
+        } else if (error.message.includes('No suitable table')) {
+          errorMessage = "No suitable table available for your party size and selected time.";
+        }
+      }
+      
       toast({
         title: "Booking Failed",
-        description: error instanceof Error ? error.message : "There was an error creating your booking. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {
