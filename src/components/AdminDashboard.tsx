@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { format, isSameDay } from 'date-fns';
 import { Calendar, Users, Clock, MapPin, Phone, Mail } from 'lucide-react';
@@ -5,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { fetchTables, fetchAllBookings, type Table as TableType, type Booking } from '@/services/supabaseBookingService';
+import { fetchTables, fetchAllBookings, getNextReservationForTable, type Table as TableType, type Booking } from '@/services/supabaseBookingService';
 
 const AdminDashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -157,6 +158,7 @@ const AdminDashboard = () => {
                 {tables.map(table => {
                   const bookings = getTableStatus(table);
                   const isBooked = bookings.length > 0;
+                  const nextReservation = getNextReservationForTable(table.id, allBookings);
                   
                   return (
                     <div
@@ -182,6 +184,18 @@ const AdminDashboard = () => {
                           <MapPin className="h-4 w-4" />
                           <span>Section: {table.section}</span>
                         </div>
+                        
+                        {/* Next Reservation Info */}
+                        {nextReservation && (
+                          <div className="mt-2 p-2 bg-blue-50 border border-blue-200 rounded">
+                            <p className="font-medium text-xs text-blue-800">Next Reservation:</p>
+                            <p className="text-xs text-blue-700">
+                              {format(new Date(nextReservation.booking_date), 'MMM dd')} at {nextReservation.start_time}
+                            </p>
+                            <p className="text-xs text-blue-600">{nextReservation.customer_name}</p>
+                          </div>
+                        )}
+                        
                         {bookings.map(booking => (
                           <div key={booking.id} className="mt-2 p-2 bg-white rounded border">
                             <p className="font-medium text-xs">{booking.customer_name}</p>

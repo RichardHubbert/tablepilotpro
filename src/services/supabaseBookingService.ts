@@ -217,8 +217,7 @@ export const createBooking = async (bookingData: {
     };
     
     console.log('📝 Prepared booking data for insertion:', newBookingData);
-    console.log('🌐 Supabase URL being used:', supabase.supabaseUrl);
-    console.log('🔑 Using API key (first 20 chars):', supabase.supabaseKey.substring(0, 20) + '...');
+    console.log('🌐 Attempting to connect to Supabase database...');
     
     // Attempt to insert the booking with detailed logging
     console.log('💾 Attempting to insert booking into Supabase...');
@@ -309,4 +308,30 @@ export const fetchAllBookings = async (): Promise<Booking[]> => {
     ...booking,
     status: booking.status as 'confirmed' | 'cancelled' | 'completed'
   }));
+};
+
+// Get next reservation for a specific table
+export const getNextReservationForTable = (tableId: string, allBookings: Booking[]): Booking | null => {
+  const now = new Date();
+  const currentDate = format(now, 'yyyy-MM-dd');
+  const currentTime = format(now, 'HH:mm');
+  
+  // Filter bookings for this table that are today or in the future
+  const futureBookings = allBookings
+    .filter(booking => booking.table_id === tableId)
+    .filter(booking => {
+      const bookingDate = booking.booking_date;
+      // Include today's bookings that haven't started yet, or future dates
+      return bookingDate > currentDate || 
+             (bookingDate === currentDate && booking.start_time > currentTime);
+    })
+    .sort((a, b) => {
+      // Sort by date first, then by time
+      if (a.booking_date !== b.booking_date) {
+        return a.booking_date.localeCompare(b.booking_date);
+      }
+      return a.start_time.localeCompare(b.start_time);
+    });
+  
+  return futureBookings.length > 0 ? futureBookings[0] : null;
 };
