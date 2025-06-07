@@ -1,15 +1,18 @@
+
 import React, { useState } from 'react';
-import { Calendar, Clock, Users, Phone, Mail, MapPin } from 'lucide-react';
+import { Calendar, Clock, Users, Phone, Mail, MapPin, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BookingModal from '@/components/BookingModal';
 import UserMenu from '@/components/UserMenu';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
 
   const handleBookingClick = () => {
     if (!user) {
@@ -19,6 +22,22 @@ const Index = () => {
     setIsBookingModalOpen(true);
   };
 
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      toast({
+        title: "Signed Out",
+        description: "You have been successfully signed out.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to sign out. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Updated navigation with user menu */}
@@ -26,6 +45,14 @@ const Index = () => {
         {user ? (
           <>
             <UserMenu />
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
             <Button 
               variant="outline" 
               size="sm"
