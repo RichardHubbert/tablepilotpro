@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Calendar, Clock, Users, Phone, Mail, MapPin, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -100,15 +101,24 @@ const Index = () => {
             </div>
           </div>
           <div className="relative">
-            <div className="bg-white rounded-2xl shadow-2xl p-6 max-w-md mx-auto">
-              <div className="text-center space-y-4">
-                <h3 className="text-2xl font-semibold text-gray-900">Quick Reserve</h3>
-                <Button 
-                  className="w-full bg-amber-600 hover:bg-amber-700"
-                  onClick={handleBookingClick}
-                >
-                  Reserve Now
-                </Button>
+            <div className="relative overflow-hidden rounded-2xl shadow-2xl">
+              <img 
+                src="/lovable-uploads/22fb2312-3451-410b-b60b-065eee5f03d4.png" 
+                alt="Fine dining experience at Table Pilot Restaurant with elegant plating and wine"
+                className="w-full h-[400px] object-cover"
+              />
+              <div className="absolute inset-0 bg-black bg-opacity-20 flex items-end">
+                <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-t-2xl p-6 w-full">
+                  <div className="text-center space-y-4">
+                    <h3 className="text-2xl font-semibold text-gray-900">Quick Reserve</h3>
+                    <Button 
+                      className="w-full bg-amber-600 hover:bg-amber-700"
+                      onClick={handleBookingClick}
+                    >
+                      Reserve Now
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
