@@ -4,21 +4,55 @@ import { Calendar, Clock, Users, Phone, Mail, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import BookingModal from '@/components/BookingModal';
+import UserMenu from '@/components/UserMenu';
+import AuthGuard from '@/components/AuthGuard';
+import { useAuth } from '@/hooks/useAuth';
 
 const Index = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const { user } = useAuth();
+
+  const handleBookingClick = () => {
+    if (!user) {
+      window.location.href = '/auth';
+      return;
+    }
+    setIsBookingModalOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Add admin link in top navigation */}
-      <div className="absolute top-4 right-4 z-10">
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => window.location.href = '/admin'}
-        >
-          Admin Dashboard
-        </Button>
+      {/* Updated navigation with user menu */}
+      <div className="absolute top-4 right-4 z-10 flex items-center gap-4">
+        {user ? (
+          <>
+            <UserMenu />
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.location.href = '/admin'}
+            >
+              Admin Dashboard
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.location.href = '/auth'}
+            >
+              Sign In
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.location.href = '/admin'}
+            >
+              Admin Dashboard
+            </Button>
+          </>
+        )}
       </div>
 
       {/* Hero Section */}
@@ -36,7 +70,7 @@ const Index = () => {
               <Button 
                 size="lg" 
                 className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
-                onClick={() => setIsBookingModalOpen(true)}
+                onClick={handleBookingClick}
               >
                 <Calendar className="mr-2 h-5 w-5" />
                 Book a Table
@@ -52,7 +86,7 @@ const Index = () => {
                 <h3 className="text-2xl font-semibold text-gray-900">Quick Reserve</h3>
                 <Button 
                   className="w-full bg-amber-600 hover:bg-amber-700"
-                  onClick={() => setIsBookingModalOpen(true)}
+                  onClick={handleBookingClick}
                 >
                   Reserve Now
                 </Button>
@@ -169,7 +203,7 @@ const Index = () => {
               <div className="space-y-4">
                 <Button 
                   className="w-full bg-amber-600 hover:bg-amber-700 text-lg py-3"
-                  onClick={() => setIsBookingModalOpen(true)}
+                  onClick={handleBookingClick}
                 >
                   <Calendar className="mr-2 h-5 w-5" />
                   Make a Reservation
@@ -183,10 +217,12 @@ const Index = () => {
         </div>
       </section>
 
-      <BookingModal 
-        isOpen={isBookingModalOpen} 
-        onClose={() => setIsBookingModalOpen(false)} 
-      />
+      {user && (
+        <BookingModal 
+          isOpen={isBookingModalOpen} 
+          onClose={() => setIsBookingModalOpen(false)} 
+        />
+      )}
     </div>
   );
 };
