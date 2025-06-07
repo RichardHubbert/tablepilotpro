@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,10 +5,12 @@ import AdminDashboard from '@/components/AdminDashboard';
 import UserMenu from '@/components/UserMenu';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const Admin = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
     try {
@@ -18,6 +19,7 @@ const Admin = () => {
         title: "Signed Out",
         description: "You have been successfully signed out.",
       });
+      navigate('/');
     } catch (error) {
       toast({
         title: "Error",

@@ -12,10 +12,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const UserMenu = () => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSignOut = async () => {
     try {
@@ -24,6 +26,7 @@ const UserMenu = () => {
         title: "Signed Out",
         description: "You have been successfully signed out.",
       });
+      navigate('/');
     } catch (error) {
       toast({
         title: "Error",

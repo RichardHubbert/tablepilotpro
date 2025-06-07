@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar, Clock, Users, Phone, Mail, MapPin, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,11 +7,13 @@ import UserMenu from '@/components/UserMenu';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const { user, signOut } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleBookingClick = () => {
     if (!user) {
@@ -29,6 +30,7 @@ const Index = () => {
         title: "Signed Out",
         description: "You have been successfully signed out.",
       });
+      navigate('/');
     } catch (error) {
       toast({
         title: "Error",
