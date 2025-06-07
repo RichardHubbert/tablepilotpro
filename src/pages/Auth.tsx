@@ -23,28 +23,57 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const checkUserRole = async (userId: string) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', userId)
+        .single();
+
+      if (error) {
+        console.log('No profile found, defaulting to home page');
+        navigate('/');
+        return;
+      }
+
+      // Redirect based on role
+      if (profile?.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/');
+      }
+    } catch (error) {
+      console.log('Error checking user role:', error);
+      navigate('/');
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Redirect authenticated users to home page
-        if (session?.user) {
-          navigate('/');
+        // Check user role and redirect after successful login
+        if (session?.user && event === 'SIGNED_IN') {
+          await checkUserRole(session.user.id);
+        } else if (session?.user && event !== 'SIGNED_OUT') {
+          // For existing sessions, also check role
+          await checkUserRole(session.user.id);
         }
       }
     );
 
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       
-      // Redirect if already logged in
+      // If already logged in, check role and redirect
       if (session?.user) {
-        navigate('/');
+        await checkUserRole(session.user.id);
       }
     });
 
