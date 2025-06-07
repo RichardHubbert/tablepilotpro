@@ -79,7 +79,7 @@ const Index = () => {
         <div className="container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-6xl font-bold text-gray-900">
-              Bella Vista
+              Table Pilot
               <span className="block text-2xl md:text-3xl text-amber-600 font-normal">Restaurant</span>
             </h1>
             <p className="text-xl text-gray-700 leading-relaxed">
@@ -176,7 +176,7 @@ const Index = () => {
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-                Visit Bella Vista
+                Visit Table Pilot
               </h2>
               
               <div className="space-y-6">

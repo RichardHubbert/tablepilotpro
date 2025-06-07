@@ -32,7 +32,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
               Authentication Required
             </CardTitle>
             <CardDescription className="text-gray-600">
-              Please sign in to make a reservation at Bella Vista
+              Please sign in to make a reservation at Table Pilot
             </CardDescription>
           </CardHeader>
           

@@ -25,7 +25,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ bookingData, 
   };
 
   // Generate a random booking reference
-  const bookingRef = `BV${Date.now().toString().slice(-6)}`;
+  const bookingRef = `TP${Date.now().toString().slice(-6)}`;
 
   return (
     <div className="space-y-6">
@@ -81,7 +81,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ bookingData, 
               <MapPin className="h-5 w-5 text-green-600" />
               <div>
                 <p className="font-medium text-green-800">Location</p>
-                <p className="text-green-700">Bella Vista Restaurant</p>
+                <p className="text-green-700">Table Pilot Restaurant</p>
               </div>
             </div>
           </div>
