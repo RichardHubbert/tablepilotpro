@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar, Clock, Users, Phone, Mail, MapPin, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -83,6 +82,16 @@ const Index = () => {
               Table Pilot
               <span className="block text-2xl md:text-3xl text-amber-600 font-normal">Restaurant</span>
             </h1>
+            
+            {/* New image positioned under the Table Pilot text */}
+            <div className="relative overflow-hidden rounded-2xl shadow-lg">
+              <img 
+                src="/lovable-uploads/50a6f4cc-7462-41e4-9627-b959d48a17d0.png" 
+                alt="Table Pilot Restaurant hero section"
+                className="w-full h-[200px] object-cover"
+              />
+            </div>
+            
             <p className="text-xl text-gray-700 leading-relaxed">
               Experience fine dining with breathtaking views. Reserve your table for an unforgettable culinary journey.
             </p>
@@ -101,24 +110,21 @@ const Index = () => {
             </div>
           </div>
           <div className="relative">
-            <div className="relative overflow-hidden rounded-2xl shadow-2xl">
-              <img 
-                src="/lovable-uploads/22fb2312-3451-410b-b60b-065eee5f03d4.png" 
-                alt="Fine dining experience at Table Pilot Restaurant with elegant plating and wine"
-                className="w-full h-[400px] object-cover"
-              />
-              <div className="absolute inset-0 bg-black bg-opacity-20 flex items-end">
-                <div className="bg-white bg-opacity-95 backdrop-blur-sm rounded-t-2xl p-6 w-full">
-                  <div className="text-center space-y-4">
-                    <h3 className="text-2xl font-semibold text-gray-900">Quick Reserve</h3>
-                    <Button 
-                      className="w-full bg-amber-600 hover:bg-amber-700"
-                      onClick={handleBookingClick}
-                    >
-                      Reserve Now
-                    </Button>
-                  </div>
-                </div>
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                Ready to Dine?
+              </h3>
+              <div className="space-y-4">
+                <Button 
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-lg py-3"
+                  onClick={handleBookingClick}
+                >
+                  <Calendar className="mr-2 h-5 w-5" />
+                  Make a Reservation
+                </Button>
+                <p className="text-sm text-gray-500 text-center">
+                  Booking slots available every 30 minutes
+                </p>
               </div>
             </div>
           </div>
