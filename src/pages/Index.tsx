@@ -113,7 +113,7 @@ const Index = () => {
                 <Button 
                   variant="outline" 
                   size="lg" 
-                  className="px-8 py-3 text-lg border-white text-white hover:bg-white hover:text-gray-900"
+                  className="px-8 py-3 text-lg border-white text-amber-600 hover:bg-white hover:text-gray-900"
                 >
                   View Menu
                 </Button>
