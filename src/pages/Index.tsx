@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar, Clock, Users, Phone, Mail, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -36,22 +35,13 @@ const Index = () => {
             </Button>
           </>
         ) : (
-          <>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => window.location.href = '/auth'}
-            >
-              Sign In
-            </Button>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => window.location.href = '/admin'}
-            >
-              Admin Dashboard
-            </Button>
-          </>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => window.location.href = '/auth'}
+          >
+            Sign In
+          </Button>
         )}
       </div>
 
