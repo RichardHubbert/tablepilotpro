@@ -83,11 +83,11 @@ const Index = () => {
               <span className="block text-2xl md:text-3xl text-amber-600 font-normal">Restaurant</span>
             </h1>
             
-            {/* New image positioned under the Table Pilot text */}
+            {/* Updated image positioned under the Table Pilot text */}
             <div className="relative overflow-hidden rounded-2xl shadow-lg">
               <img 
-                src="/lovable-uploads/50a6f4cc-7462-41e4-9627-b959d48a17d0.png" 
-                alt="Table Pilot Restaurant hero section"
+                src="/lovable-uploads/1cf1aa04-79c2-4d2b-b395-ab316329e682.png" 
+                alt="Table Pilot Restaurant fine dining experience"
                 className="w-full h-[200px] object-cover"
               />
             </div>
