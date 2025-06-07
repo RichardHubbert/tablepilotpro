@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Calendar, Clock, Users, Phone, Mail, MapPin, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -74,57 +75,68 @@ const Index = () => {
         )}
       </div>
 
-      {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-amber-50 to-orange-100 min-h-[70vh] flex items-center">
-        <div className="container mx-auto px-4 grid md:grid-cols-2 gap-8 items-center">
-          <div className="space-y-6">
-            <h1 className="text-4xl md:text-6xl font-bold text-gray-900">
-              Table Pilot
-              <span className="block text-2xl md:text-3xl text-amber-600 font-normal">Restaurant</span>
-            </h1>
-            
-            {/* Updated image positioned under the Table Pilot text */}
-            <div className="relative overflow-hidden rounded-2xl shadow-lg">
-              <img 
-                src="/lovable-uploads/1cf1aa04-79c2-4d2b-b395-ab316329e682.png" 
-                alt="Table Pilot Restaurant fine dining experience"
-                className="w-full h-[200px] object-cover"
-              />
-            </div>
-            
-            <p className="text-xl text-gray-700 leading-relaxed">
-              Experience fine dining with breathtaking views. Reserve your table for an unforgettable culinary journey.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                size="lg" 
-                className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
-                onClick={handleBookingClick}
-              >
-                <Calendar className="mr-2 h-5 w-5" />
-                Book a Table
-              </Button>
-              <Button variant="outline" size="lg" className="px-8 py-3 text-lg">
-                View Menu
-              </Button>
-            </div>
-          </div>
-          <div className="relative">
-            <div className="bg-white rounded-2xl shadow-xl p-8">
-              <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-                Ready to Dine?
-              </h3>
-              <div className="space-y-4">
+      {/* Hero Section with Background Image */}
+      <section className="relative min-h-[80vh] flex items-center">
+        {/* Background Image */}
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/lovable-uploads/63f65980-577a-4131-8e56-1a624cfca4b8.png" 
+            alt="Table Pilot Restaurant background"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/30"></div>
+        </div>
+        
+        {/* Hero Content */}
+        <div className="relative z-10 container mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            {/* Left Side - Title and Description */}
+            <div className="space-y-6 text-white">
+              <h1 className="text-4xl md:text-6xl font-bold">
+                Table Pilot
+                <span className="block text-2xl md:text-3xl text-amber-400 font-normal">Restaurant</span>
+              </h1>
+              
+              <p className="text-xl leading-relaxed">
+                Experience fine dining with breathtaking views. Reserve your table for an unforgettable culinary journey.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-4">
                 <Button 
-                  className="w-full bg-amber-600 hover:bg-amber-700 text-lg py-3"
+                  size="lg" 
+                  className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
                   onClick={handleBookingClick}
                 >
                   <Calendar className="mr-2 h-5 w-5" />
-                  Make a Reservation
+                  Book a Table
                 </Button>
-                <p className="text-sm text-gray-500 text-center">
-                  Booking slots available every 30 minutes
-                </p>
+                <Button 
+                  variant="outline" 
+                  size="lg" 
+                  className="px-8 py-3 text-lg border-white text-white hover:bg-white hover:text-gray-900"
+                >
+                  View Menu
+                </Button>
+              </div>
+            </div>
+
+            {/* Right Side - Quick Reserve Card */}
+            <div className="flex justify-end">
+              <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-sm">
+                <h3 className="text-2xl font-bold text-gray-900 mb-6 text-center">
+                  Quick Reserve
+                </h3>
+                <div className="space-y-4">
+                  <Button 
+                    className="w-full bg-amber-600 hover:bg-amber-700 text-lg py-3"
+                    onClick={handleBookingClick}
+                  >
+                    Reserve Now
+                  </Button>
+                  <p className="text-sm text-gray-500 text-center">
+                    Booking slots available every 30 minutes
+                  </p>
+                </div>
               </div>
             </div>
           </div>
