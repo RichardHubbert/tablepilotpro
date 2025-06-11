@@ -113,14 +113,11 @@ const Auth = () => {
           description: "You have successfully logged in.",
         });
       } else {
-        // Sign up
-        const redirectUrl = `${window.location.origin}/`;
-        
+        // Sign up with improved redirect handling
         const { error } = await supabase.auth.signUp({
           email,
           password,
           options: {
-            emailRedirectTo: redirectUrl,
             data: {
               full_name: fullName,
             },
