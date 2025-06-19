@@ -1,4 +1,12 @@
 import React, { useState } from 'react';
+
+interface NavigatorWithConnection extends Navigator {
+  connection?: {
+    effectiveType: string;
+    downlink: number;
+    rtt: number;
+  };
+}
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,7 +46,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [bookingData, setBookingData] = useState<Partial<BookingData>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [confirmationData, setConfirmationData] = useState<any>(null);
+  const [confirmationData, setConfirmationData] = useState<BookingData | null>(null);
   const { toast } = useToast();
 
   const handleNext = () => {
@@ -105,10 +113,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       screenSize: `${screen.width}x${screen.height}`,
       windowSize: `${window.innerWidth}x${window.innerHeight}`,
       onLine: navigator.onLine,
-      connection: (navigator as any).connection ? {
-        effectiveType: (navigator as any).connection.effectiveType,
-        downlink: (navigator as any).connection.downlink,
-        rtt: (navigator as any).connection.rtt
+      connection: (navigator as NavigatorWithConnection).connection ? {
+        effectiveType: (navigator as NavigatorWithConnection).connection.effectiveType,
+        downlink: (navigator as NavigatorWithConnection).connection.downlink,
+        rtt: (navigator as NavigatorWithConnection).connection.rtt
       } : 'Not available'
     });
     
@@ -129,7 +137,17 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       });
       
       console.log('🎉 Booking submission successful!', result);
-      setConfirmationData(result);
+      // Convert Booking to BookingData
+      const confirmedBooking: BookingData = {
+        date: new Date(result.booking_date),
+        startTime: result.start_time,
+        partySize: result.party_size,
+        customerName: result.customer_name,
+        customerEmail: result.customer_email,
+        customerPhone: result.customer_phone,
+        specialRequests: result.special_requests
+      };
+      setConfirmationData(confirmedBooking);
       setCurrentStep(5);
       
       toast({

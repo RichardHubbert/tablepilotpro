@@ -23,33 +23,33 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const checkUserRole = async (userId: string) => {
-    try {
-      const { data: profile, error } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('user_id', userId)
-        .single();
-
-      if (error) {
-        console.log('No profile found, defaulting to home page');
-        navigate('/');
-        return;
-      }
-
-      // Redirect based on role
-      if (profile?.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/');
-      }
-    } catch (error) {
-      console.log('Error checking user role:', error);
-      navigate('/');
-    }
-  };
-
   useEffect(() => {
+    const checkUserRole = async (userId: string) => {
+      try {
+        const { data: profile, error } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', userId)
+          .single();
+
+        if (error) {
+          console.log('No profile found, defaulting to home page');
+          navigate('/');
+          return;
+        }
+
+        // Redirect based on role
+        if (profile?.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/');
+        }
+      } catch (error) {
+        console.log('Error checking user role:', error);
+        navigate('/');
+      }
+    };
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
