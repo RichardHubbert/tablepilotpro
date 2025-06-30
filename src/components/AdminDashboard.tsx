@@ -71,25 +71,29 @@ const AdminDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto space-y-6 p-4">
+        {/* Date Selector */}
         <div className="bg-white rounded-lg shadow p-6">
-          <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+            <h2 className="text-xl font-semibold text-gray-700">Reservations Overview</h2>
+            
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="flex items-center gap-3 border rounded-lg p-3 bg-white shadow-sm">
                 <Calendar className="h-5 w-5 text-gray-500" />
                 <input
                   type="date"
                   value={format(selectedDate, 'yyyy-MM-dd')}
                   onChange={(e) => setSelectedDate(new Date(e.target.value))}
-                  className="border rounded px-3 py-2"
+                  className="border-none focus:ring-0 p-0 text-gray-800"
                 />
               </div>
-              <Badge variant="outline">
-                {format(selectedDate, 'EEEE, MMMM do, yyyy')}
-              </Badge>
+              
+              <div className="rounded-full bg-amber-50 border border-amber-100 py-2 px-4">
+                <span className="text-amber-800 font-medium">
+                  {format(selectedDate, 'EEEE, MMMM do, yyyy')}
+                </span>
+              </div>
             </div>
           </div>
           

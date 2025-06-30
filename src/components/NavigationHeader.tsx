@@ -3,11 +3,16 @@ import React from 'react';
 import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UserMenu from '@/components/UserMenu';
+import MobileMenu from '@/components/MobileMenu';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
-const NavigationHeader = () => {
+interface NavigationHeaderProps {
+  onBookingClick?: () => void;
+}
+
+const NavigationHeader = ({ onBookingClick }: NavigationHeaderProps) => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -30,35 +35,41 @@ const NavigationHeader = () => {
   };
 
   return (
-    <div className="absolute top-4 right-4 z-10 flex items-center gap-4">
-      {user ? (
-        <>
-          <UserMenu />
+    <div className="absolute top-4 right-4 z-50 flex items-center gap-4">
+      {/* Mobile Menu (only visible on mobile) */}
+      <MobileMenu onBookingClick={onBookingClick} />
+      
+      {/* Desktop Navigation (hidden on mobile) */}
+      <div className="hidden md:flex items-center gap-4">
+        {user ? (
+          <>
+            <UserMenu />
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleLogout}
+            >
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => window.location.href = '/admin'}
+            >
+              Admin Dashboard
+            </Button>
+          </>
+        ) : (
           <Button 
             variant="outline" 
             size="sm"
-            onClick={handleLogout}
+            onClick={() => window.location.href = '/auth'}
           >
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
+            Sign In
           </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => window.location.href = '/admin'}
-          >
-            Admin Dashboard
-          </Button>
-        </>
-      ) : (
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={() => window.location.href = '/auth'}
-        >
-          Sign In
-        </Button>
-      )}
+        )}
+      </div>
     </div>
   );
 };

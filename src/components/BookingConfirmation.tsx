@@ -51,21 +51,36 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ bookingData, 
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid md:grid-cols-2 gap-4">
-            <div className="flex items-center space-x-3">
-              <Calendar className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="font-medium text-green-800">Date</p>
-                <p className="text-green-700">{format(bookingData.date, 'EEEE, MMMM do, yyyy')}</p>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center border rounded-lg p-3 bg-white shadow-sm">
+                <Calendar className="h-5 w-5 text-gray-500 mr-2" />
+                <span className="text-gray-800 font-medium">
+                  {format(bookingData.date, 'dd/MM/yyyy')}
+                </span>
+              </div>
+              
+              <div className="rounded-full bg-green-50 border border-green-100 py-2 px-4 text-center">
+                <span className="text-green-800 font-medium">
+                  {format(bookingData.date, 'EEEE')},<br />
+                  {format(bookingData.date, 'MMMM do, yyyy')}
+                </span>
               </div>
             </div>
 
-            <div className="flex items-center space-x-3">
-              <Clock className="h-5 w-5 text-green-600" />
-              <div>
-                <p className="font-medium text-green-800">Time</p>
-                <p className="text-green-700">
-                  {formatTime(bookingData.startTime)} - {getEndTime(bookingData.startTime)}
-                </p>
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center border rounded-lg p-3 bg-white shadow-sm">
+                <Clock className="h-5 w-5 text-gray-500 mr-2" />
+                <span className="text-gray-800 font-medium">
+                  {formatTime(bookingData.startTime)}
+                </span>
+              </div>
+              
+              <div className="rounded-full bg-green-50 border border-green-100 py-2 px-4 text-center">
+                <span className="text-green-800">
+                  <span className="font-medium">{formatTime(bookingData.startTime)}</span>
+                  <span className="mx-1">→</span>
+                  <span>{getEndTime(bookingData.startTime)}</span>
+                </span>
               </div>
             </div>
 

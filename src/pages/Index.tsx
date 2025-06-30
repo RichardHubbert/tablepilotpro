@@ -21,7 +21,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <NavigationHeader />
+      <NavigationHeader onBookingClick={handleBookingClick} />
       <HeroSection onBookingClick={handleBookingClick} />
       <TableSizesSection />
       <RestaurantInfoSection onBookingClick={handleBookingClick} />
