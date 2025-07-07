@@ -2,19 +2,21 @@
 import React from 'react';
 import { Calendar, Clock, Mail, MapPin, Phone } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Restaurant } from './RestaurantSelector';
 
 interface RestaurantInfoSectionProps {
   onBookingClick: () => void;
+  selectedRestaurant?: Restaurant;
 }
 
-const RestaurantInfoSection = ({ onBookingClick }: RestaurantInfoSectionProps) => {
+const RestaurantInfoSection = ({ onBookingClick, selectedRestaurant }: RestaurantInfoSectionProps) => {
   return (
     <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 gap-12 items-center">
           <div className="space-y-8">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900">
-              Visit Table Pilot
+              Visit {selectedRestaurant?.name || 'Table Pilot'}
             </h2>
             
             <div className="space-y-6">
@@ -31,7 +33,9 @@ const RestaurantInfoSection = ({ onBookingClick }: RestaurantInfoSectionProps) =
                 <MapPin className="h-6 w-6 text-amber-600 mt-1" />
                 <div>
                   <h3 className="font-semibold text-gray-900">Location</h3>
-                  <p className="text-gray-600">123 Fine Dining Street<br />Downtown District, City 12345</p>
+                  <p className="text-gray-600">
+                    {selectedRestaurant?.address || '123 Fine Dining Street<br />Downtown District, City 12345'}
+                  </p>
                 </div>
               </div>
 

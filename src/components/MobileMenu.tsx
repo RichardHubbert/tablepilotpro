@@ -1,15 +1,18 @@
 import React from 'react';
 import { Menu, X, Calendar, LogOut, User, Home, Info, Coffee } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import RestaurantSelector, { Restaurant } from '@/components/RestaurantSelector';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 interface MobileMenuProps {
   onBookingClick?: () => void;
+  selectedRestaurant?: Restaurant;
+  onRestaurantChange?: (restaurant: Restaurant) => void;
 }
 
-const MobileMenu = ({ onBookingClick }: MobileMenuProps) => {
+const MobileMenu = ({ onBookingClick, selectedRestaurant, onRestaurantChange }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -74,6 +77,14 @@ const MobileMenu = ({ onBookingClick }: MobileMenuProps) => {
               >
                 <X className="h-6 w-6" />
               </Button>
+            </div>
+            
+            {/* Restaurant Selector for Mobile */}
+            <div className="mb-6">
+              <RestaurantSelector
+                selectedRestaurant={selectedRestaurant}
+                onRestaurantChange={onRestaurantChange || (() => {})}
+              />
             </div>
             
             <nav className="flex flex-col space-y-6">

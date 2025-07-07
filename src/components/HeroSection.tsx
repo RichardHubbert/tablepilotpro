@@ -1,21 +1,23 @@
 
 import React from 'react';
-import { Calendar } from 'lucide-react';
+import { Calendar, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import QuickReserveCard from './QuickReserveCard';
+import { Restaurant } from './RestaurantSelector';
 
 interface HeroSectionProps {
   onBookingClick: () => void;
+  selectedRestaurant?: Restaurant;
 }
 
-const HeroSection = ({ onBookingClick }: HeroSectionProps) => {
+const HeroSection = ({ onBookingClick, selectedRestaurant }: HeroSectionProps) => {
   return (
     <section className="relative min-h-[80vh] flex items-center">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img 
-          src="/lovable-uploads/d1a98a63-2cc5-4972-9f0d-87d62451a02b.png" 
-          alt="Table Pilot Restaurant background"
+          src={selectedRestaurant?.imageUrl || "/lovable-uploads/d1a98a63-2cc5-4972-9f0d-87d62451a02b.png"}
+          alt={`${selectedRestaurant?.name || 'Table Pilot'} Restaurant background`}
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/30"></div>
@@ -27,12 +29,25 @@ const HeroSection = ({ onBookingClick }: HeroSectionProps) => {
           {/* Left Side - Title and Description */}
           <div className="space-y-6 text-white">
             <h1 className="text-4xl md:text-6xl font-bold">
-              Table Pilot
-              <span className="block text-2xl md:text-3xl text-amber-400 font-normal">Restaurant</span>
+              {selectedRestaurant?.name || 'Table Pilot'}
+              <span className="block text-2xl md:text-3xl text-amber-400 font-normal">
+                {selectedRestaurant?.cuisine || 'Restaurant'}
+              </span>
             </h1>
             
+            {selectedRestaurant && (
+              <div className="flex items-center gap-2 text-amber-400">
+                <Star className="h-5 w-5 fill-current" />
+                <span className="text-lg font-medium">{selectedRestaurant.rating}</span>
+                <span className="text-sm text-gray-300">• {selectedRestaurant.address}</span>
+              </div>
+            )}
+            
             <p className="text-xl leading-relaxed">
-              Experience fine dining with breathtaking views. Reserve your table for an unforgettable culinary journey.
+              {selectedRestaurant 
+                ? `Experience ${selectedRestaurant.cuisine.toLowerCase()} cuisine at ${selectedRestaurant.name}. Reserve your table for an unforgettable culinary journey.`
+                : 'Experience fine dining with breathtaking views. Reserve your table for an unforgettable culinary journey.'
+              }
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4">

@@ -559,6 +559,54 @@ export type Database = {
         }
         Relationships: []
       }
+      restaurants: {
+        Row: {
+          id: string
+          name: string
+          address: string
+          cuisine: string
+          rating: number | null
+          image_url: string | null
+          phone: string | null
+          email: string | null
+          opening_hours: Json | null
+          description: string | null
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          address: string
+          cuisine: string
+          rating?: number | null
+          image_url?: string | null
+          phone?: string | null
+          email?: string | null
+          opening_hours?: Json | null
+          description?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          address?: string
+          cuisine?: string
+          rating?: number | null
+          image_url?: string | null
+          phone?: string | null
+          email?: string | null
+          opening_hours?: Json | null
+          description?: string | null
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       url_analysis: {
         Row: {
           analyzed_at: string | null

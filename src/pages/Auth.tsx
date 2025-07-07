@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, User as UserIcon } from 'lucide-react';
@@ -94,6 +93,7 @@ const Auth = () => {
         });
 
         if (error) {
+          console.error('Login error:', error);
           if (error.message.includes('Invalid login credentials')) {
             toast({
               title: "Login Failed",
@@ -116,17 +116,26 @@ const Auth = () => {
         });
       } else {
         // Sign up with improved redirect handling
-        const { error } = await supabase.auth.signUp({
+        console.log('Attempting signup with:', { email, fullName });
+        console.log('Using Supabase URL:', SUPABASE_URL);
+        
+        const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             data: {
               full_name: fullName,
             },
+            emailRedirectTo: `${window.location.origin}/auth`,
           },
         });
 
+        console.log('Signup response:', { data, error });
+        console.log('User data:', data?.user);
+        console.log('Session data:', data?.session);
+
         if (error) {
+          console.error('Signup error details:', error);
           if (error.message.includes('User already registered')) {
             toast({
               title: "Account Exists",
@@ -143,12 +152,46 @@ const Auth = () => {
           return;
         }
 
-        toast({
-          title: "Account Created!",
-          description: "Please check your email to verify your account.",
-        });
+        console.log('Signup successful:', data);
+        
+        // Check if email confirmation is required
+        if (data.user && !data.session) {
+          toast({
+            title: "Account Created!",
+            description: "Please check your email to verify your account.",
+          });
+        } else if (data.session) {
+          // User is automatically signed in (local development)
+          toast({
+            title: "Account Created!",
+            description: "You have been automatically signed in.",
+          });
+          
+          // Manual profile creation fallback if trigger didn't work
+          if (data.user) {
+            try {
+              const { error: profileError } = await supabase
+                .from('profiles')
+                .insert({
+                  user_id: data.user.id,
+                  full_name: fullName || '',
+                  company_name: '',
+                  role: 'user'
+                });
+              
+              if (profileError) {
+                console.error('Failed to create profile manually:', profileError);
+              } else {
+                console.log('Profile created manually');
+              }
+            } catch (profileError) {
+              console.error('Error creating profile manually:', profileError);
+            }
+          }
+        }
       }
     } catch (error) {
+      console.error('Unexpected error:', error);
       toast({
         title: "Error",
         description: "An unexpected error occurred. Please try again.",

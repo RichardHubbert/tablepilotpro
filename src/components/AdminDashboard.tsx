@@ -1,14 +1,15 @@
-
 import React, { useState, useEffect } from 'react';
 import { format, isSameDay } from 'date-fns';
-import { Calendar, Users, Clock, MapPin, Phone, Mail } from 'lucide-react';
+import { Calendar, Users, Clock, MapPin, Phone, Mail, Building2 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { fetchTables, fetchAllBookings, getNextReservationForTable, type Table as TableType, type Booking } from '@/services/supabaseBookingService';
+import { useAdmin } from '@/hooks/useAdmin';
 
 const AdminDashboard = () => {
+  const { isAdmin } = useAdmin();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [tables, setTables] = useState<TableType[]>([]);
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
@@ -30,7 +31,7 @@ const AdminDashboard = () => {
         setAllBookings(bookingsData);
       } catch (err) {
         console.error('Error loading dashboard data:', err);
-        setError('Failed to load dashboard data');
+        setError('Failed to load dashboard data: ' + (err instanceof Error ? err.message : String(err)));
       } finally {
         setLoading(false);
       }
@@ -206,6 +207,19 @@ const AdminDashboard = () => {
                             <p className="text-xs text-gray-500">
                               {booking.start_time} - {booking.end_time} ({booking.party_size} guests)
                             </p>
+                            {(booking.restaurant && booking.restaurant.name) ? (
+                              <p className="text-xs text-blue-600 font-medium">
+                                {booking.restaurant.name} ({booking.restaurant.cuisine})
+                              </p>
+                            ) : booking.restaurant_id ? (
+                              <p className="text-xs text-blue-600 font-medium">
+                                Restaurant ID: {booking.restaurant_id}
+                              </p>
+                            ) : (
+                              <p className="text-xs text-red-600 font-medium">
+                                No restaurant info
+                              </p>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -261,6 +275,22 @@ const AdminDashboard = () => {
                               <span>{booking.customer_phone}</span>
                             </div>
                           )}
+                          {booking.restaurant && booking.restaurant.name ? (
+                            <div className="flex items-center space-x-2">
+                              <Building2 className="h-4 w-4 text-blue-400" />
+                              <span className="text-blue-600 font-medium">{booking.restaurant.name} ({booking.restaurant.cuisine})</span>
+                            </div>
+                          ) : booking.restaurant_id ? (
+                            <div className="flex items-center space-x-2">
+                              <Building2 className="h-4 w-4 text-blue-400" />
+                              <span className="text-blue-600 font-medium">Restaurant ID: {booking.restaurant_id}</span>
+                            </div>
+                          ) : (
+                            <div className="flex items-center space-x-2">
+                              <Building2 className="h-4 w-4 text-red-400" />
+                              <span className="text-red-600 font-medium">No restaurant info</span>
+                            </div>
+                          )}
                         </div>
                         
                         {booking.special_requests && (
@@ -277,6 +307,74 @@ const AdminDashboard = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Restaurant Management Section - Only for Admin */}
+        {isAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5" />
+                Restaurant Management
+              </CardTitle>
+              <CardDescription>
+                Manage restaurants in the system. Add, edit, or remove restaurants.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Manage all restaurants that appear in the restaurant selector dropdown.
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Only visible to admin users (richardhubbert@gmail.com)
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => window.location.href = '/restaurants'}
+                  className="flex items-center gap-2"
+                >
+                  <Building2 className="h-4 w-4" />
+                  Manage Restaurants
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* User Management Section - Only for Admin */}
+        {isAdmin && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                User Management
+              </CardTitle>
+              <CardDescription>
+                Manage users in the system. Invite, edit, or deactivate users.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">
+                    Manage all users, assign roles (admin, business, user), and control access.
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    Only visible to admin users (richardhubbert@gmail.com)
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => window.location.href = '/users'}
+                  className="flex items-center gap-2"
+                >
+                  <Users className="h-4 w-4" />
+                  Manage Users
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

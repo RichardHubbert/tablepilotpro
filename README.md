@@ -50,6 +50,32 @@ npm run dev
 - Click on "New codespace" to launch a new Codespace environment.
 - Edit files directly within the Codespace and commit and push your changes once you're done.
 
+## Features
+
+### Restaurant Selection
+The application includes a comprehensive restaurant selector with:
+- **Dropdown Menu**: Easy selection from a list of available restaurants
+- **Search Functionality**: Filter restaurants by name, cuisine, or address
+- **Visual Display**: Each restaurant shows an image, rating, and details
+- **Responsive Design**: Works seamlessly on both desktop and mobile devices
+- **Global State Management**: Selected restaurant is available throughout the app
+
+### Restaurant Management (Admin Only)
+Admin users (richardhubbert@gmail.com) can manage restaurants through:
+- **Add New Restaurants**: Complete form with all restaurant details
+- **Edit Existing Restaurants**: Update any restaurant information
+- **Delete/Restore Restaurants**: Soft delete with ability to restore
+- **Search & Filter**: Find restaurants quickly in the admin interface
+- **Database Integration**: All changes saved to Supabase
+- **Access Control**: Only admin users can access management features
+
+### Booking System
+- User authentication and authorization
+- Table reservation with date, time, and party size selection
+- Real-time availability checking
+- Email confirmation system
+- Admin dashboard for managing bookings
+
 ## What technologies are used for this project?
 
 This project is built with:
@@ -59,6 +85,9 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase (Backend)
+- React Router (Navigation)
+- React Query (Data fetching)
 
 ## How can I deploy this project?
 

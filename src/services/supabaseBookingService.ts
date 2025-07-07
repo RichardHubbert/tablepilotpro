@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { format, addMinutes, isSameDay } from 'date-fns';
 
@@ -12,6 +11,7 @@ export interface Table {
 export interface Booking {
   id: string;
   table_id: string;
+  restaurant_id?: string;
   customer_name: string;
   customer_email: string;
   customer_phone?: string;
@@ -22,6 +22,11 @@ export interface Booking {
   status: 'confirmed' | 'cancelled' | 'completed';
   special_requests?: string;
   created_at: string;
+  restaurant?: {
+    id: string;
+    name: string;
+    cuisine: string;
+  };
 }
 
 // Fetch all tables from Supabase
@@ -160,6 +165,7 @@ export const getOptimalTable = async (partySize: number): Promise<Table | null> 
 
 // Create a new booking
 export const createBooking = async (bookingData: {
+  restaurantId: string;
   date: Date;
   startTime: string;
   partySize: number;
@@ -193,120 +199,67 @@ export const createBooking = async (bookingData: {
       throw new Error('No suitable table available');
     }
     
-    console.log('✅ Optimal table found:', optimalTable);
-    
-    // Calculate end time
-    console.log('⏰ Calculating booking times...');
+    // Calculate end time (2.5 hours after start time)
     const [hours, minutes] = bookingData.startTime.split(':').map(Number);
-    const startDate = new Date();
+    const startDate = new Date(bookingData.date);
     startDate.setHours(hours, minutes, 0, 0);
-    const endDate = addMinutes(startDate, 150);
+    const endDate = addMinutes(startDate, 150); // 2.5 hours
     const endTime = format(endDate, 'HH:mm');
     
-    const newBookingData = {
-      table_id: optimalTable.id,
-      customer_name: bookingData.customerName,
-      customer_email: bookingData.customerEmail,
-      customer_phone: bookingData.customerPhone,
-      booking_date: format(bookingData.date, 'yyyy-MM-dd'),
-      start_time: bookingData.startTime,
-      end_time: endTime,
-      party_size: bookingData.partySize,
-      status: 'confirmed' as const,
-      special_requests: bookingData.specialRequests
-    };
-    
-    console.log('📝 Prepared booking data for insertion:', newBookingData);
-    console.log('🌐 Attempting to connect to Supabase database...');
-    
-    // Attempt to insert the booking with detailed logging
-    console.log('💾 Attempting to insert booking into Supabase...');
-    const insertStartTime = Date.now();
-    
+    // Insert booking into Supabase
     const { data, error } = await supabase
       .from('bookings')
-      .insert(newBookingData)
+      .insert({
+        table_id: optimalTable.id,
+        restaurant_id: bookingData.restaurantId,
+        customer_name: bookingData.customerName,
+        customer_email: bookingData.customerEmail,
+        customer_phone: bookingData.customerPhone,
+        booking_date: format(bookingData.date, 'yyyy-MM-dd'),
+        start_time: bookingData.startTime,
+        end_time: endTime,
+        party_size: bookingData.partySize,
+        status: 'confirmed',
+        special_requests: bookingData.specialRequests
+      })
       .select()
       .single();
     
-    const insertEndTime = Date.now();
-    console.log(`⏱️ Insert operation took ${insertEndTime - insertStartTime}ms`);
-    
     if (error) {
-      console.error('❌ Supabase insert error:', {
-        message: error.message,
-        details: error.details,
-        hint: error.hint,
-        code: error.code
-      });
-      console.error('📊 Error context:', {
-        table: 'bookings',
-        operation: 'insert',
-        data: newBookingData
-      });
-      throw new Error(`Failed to create booking: ${error.message}`);
+      console.error('❌ Error inserting booking:', error);
+      throw error;
     }
     
-    if (!data) {
-      console.error('❌ No data returned from insert operation');
-      throw new Error('Booking was not created - no data returned');
-    }
-    
-    console.log('🎉 Booking created successfully!');
-    console.log('📋 Created booking data:', data);
-    
-    // Verify the booking was actually created by fetching it back
-    console.log('🔄 Verifying booking creation...');
-    const verification = await supabase
-      .from('bookings')
-      .select('*')
-      .eq('id', data.id)
-      .single();
-    
-    if (verification.error) {
-      console.warn('⚠️ Could not verify booking creation:', verification.error);
-    } else {
-      console.log('✅ Booking verification successful:', verification.data);
-    }
-    
-    // Cast the returned data to ensure proper typing
-    return {
-      ...data,
-      status: data.status as 'confirmed' | 'cancelled' | 'completed'
-    };
-    
+    console.log('✅ Booking created successfully:', data);
+    return data as Booking;
   } catch (error) {
-    console.error('💥 Critical error in createBooking:', error);
-    console.error('🔍 Error stack:', error instanceof Error ? error.stack : 'No stack trace available');
-    console.error('🌍 Browser info:', {
-      userAgent: navigator.userAgent,
-      onLine: navigator.onLine,
-      cookieEnabled: navigator.cookieEnabled,
-      timestamp: new Date().toISOString()
-    });
+    console.error('💥 Booking creation failed:', error);
     throw error;
   }
 };
 
-// Fetch all bookings (for admin dashboard)
+// Fetch all bookings with restaurant info (for admin dashboard)
 export const fetchAllBookings = async (): Promise<Booking[]> => {
   console.log('Fetching all bookings from Supabase...');
   const { data, error } = await supabase
     .from('bookings')
-    .select('*')
+    .select(`*, restaurant:restaurant_id (id, name, cuisine)`)
     .order('booking_date', { ascending: true })
     .order('start_time', { ascending: true });
-  
+
   if (error) {
     console.error('Error fetching all bookings:', error);
     throw error;
   }
-  
+
   console.log('All bookings fetched:', data);
   // Cast the data to ensure proper typing for status field
   return (data || []).map(booking => ({
     ...booking,
-    status: booking.status as 'confirmed' | 'cancelled' | 'completed'
+    status: booking.status as 'confirmed' | 'cancelled' | 'completed',
+    restaurant: (booking.restaurant && typeof booking.restaurant === 'object' && 'id' in booking.restaurant)
+      ? booking.restaurant as { id: string; name: string; cuisine: string }
+      : undefined
   }));
 };
 

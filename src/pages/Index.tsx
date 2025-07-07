@@ -6,10 +6,12 @@ import HeroSection from '@/components/HeroSection';
 import TableSizesSection from '@/components/TableSizesSection';
 import RestaurantInfoSection from '@/components/RestaurantInfoSection';
 import { useAuth } from '@/hooks/useAuth';
+import { useRestaurant } from '@/contexts/RestaurantContext';
 
 const Index = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const { user } = useAuth();
+  const { selectedRestaurant, setSelectedRestaurant } = useRestaurant();
 
   const handleBookingClick = () => {
     if (!user) {
@@ -21,10 +23,20 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <NavigationHeader onBookingClick={handleBookingClick} />
-      <HeroSection onBookingClick={handleBookingClick} />
+      <NavigationHeader 
+        onBookingClick={handleBookingClick}
+        selectedRestaurant={selectedRestaurant}
+        onRestaurantChange={setSelectedRestaurant}
+      />
+      <HeroSection 
+        onBookingClick={handleBookingClick}
+        selectedRestaurant={selectedRestaurant}
+      />
       <TableSizesSection />
-      <RestaurantInfoSection onBookingClick={handleBookingClick} />
+      <RestaurantInfoSection 
+        onBookingClick={handleBookingClick}
+        selectedRestaurant={selectedRestaurant}
+      />
 
       {user && (
         <BookingModal 

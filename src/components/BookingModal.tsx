@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface NavigatorWithConnection extends Navigator {
   connection?: {
@@ -10,7 +11,7 @@ interface NavigatorWithConnection extends Navigator {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { ChevronLeft, ChevronRight, Calendar, Users, Clock, CheckCircle } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Calendar, Users, Clock, CheckCircle, Mail } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import DateSelector from '@/components/DateSelector';
 import PartySizeSelector from '@/components/PartySizeSelector';
@@ -18,6 +19,7 @@ import TimeSlotSelector from '@/components/TimeSlotSelector';
 import CustomerForm from '@/components/CustomerForm';
 import BookingConfirmation from '@/components/BookingConfirmation';
 import { createBooking } from '@/services/supabaseBookingService';
+import { sendBookingConfirmationEmail } from '@/services/emailService';
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -25,6 +27,7 @@ interface BookingModalProps {
 }
 
 export interface BookingData {
+  restaurantId: string;
   date: Date;
   startTime: string;
   partySize: number;
@@ -42,9 +45,27 @@ const steps = [
   { id: 5, title: 'Confirm', icon: CheckCircle },
 ];
 
+// RestaurantSelector component
+function RestaurantSelector({ value, onChange }: { value: string; onChange: (id: string) => void }) {
+  const [restaurants, setRestaurants] = useState<{ id: string; name: string }[]>([]);
+  useEffect(() => {
+    supabase.from('restaurants').select('id, name').then(({ data }) => {
+      if (data) setRestaurants(data);
+    });
+  }, []);
+  return (
+    <select value={value} onChange={e => onChange(e.target.value)} required className="mb-4 w-full border rounded p-2">
+      <option value="">Select a restaurant</option>
+      {restaurants.map(r => (
+        <option key={r.id} value={r.id}>{r.name}</option>
+      ))}
+    </select>
+  );
+}
+
 const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [bookingData, setBookingData] = useState<Partial<BookingData>>({});
+  const [bookingData, setBookingData] = useState<Partial<BookingData>>({ restaurantId: '', date: undefined });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmationData, setConfirmationData] = useState<BookingData | null>(null);
   const { toast } = useToast();
@@ -63,7 +84,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
 
   const handleClose = () => {
     setCurrentStep(1);
-    setBookingData({});
+    setBookingData({ restaurantId: '', date: undefined });
     setIsSubmitting(false);
     setConfirmationData(null);
     onClose();
@@ -76,7 +97,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return bookingData.date;
+        return bookingData.restaurantId && bookingData.date;
       case 2:
         return bookingData.partySize;
       case 3:
@@ -89,9 +110,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleSubmit = async () => {
-    if (!bookingData.date || !bookingData.startTime || !bookingData.partySize || 
+    if (!bookingData.restaurantId || !bookingData.date || !bookingData.startTime || !bookingData.partySize || 
         !bookingData.customerName || !bookingData.customerEmail) {
       console.error('❌ Missing required booking data:', {
+        hasRestaurant: !!bookingData.restaurantId,
         hasDate: !!bookingData.date,
         hasStartTime: !!bookingData.startTime,
         hasPartySize: !!bookingData.partySize,
@@ -100,7 +122,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       });
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields",
+        description: "Please fill in all required fields, including restaurant selection",
         variant: "destructive"
       });
       return;
@@ -123,10 +145,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     try {
       console.log('📝 Submitting booking with data:', {
         ...bookingData,
-        date: bookingData.date.toISOString()
+        date: bookingData.date?.toISOString()
       });
       
       const result = await createBooking({
+        restaurantId: bookingData.restaurantId,
         date: bookingData.date,
         startTime: bookingData.startTime,
         partySize: bookingData.partySize,
@@ -139,6 +162,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       console.log('🎉 Booking submission successful!', result);
       // Convert Booking to BookingData
       const confirmedBooking: BookingData = {
+        restaurantId: result.restaurant_id,
         date: new Date(result.booking_date),
         startTime: result.start_time,
         partySize: result.party_size,
@@ -150,9 +174,15 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       setConfirmationData(confirmedBooking);
       setCurrentStep(5);
       
+      // Send confirmation email
+      console.log('📧 Attempting to send confirmation email...');
+      const emailSent = await sendBookingConfirmationEmail(result);
+      
       toast({
         title: "Booking Confirmed!",
-        description: "Your table reservation has been successfully created.",
+        description: emailSent 
+          ? "Your table reservation has been successfully created. A confirmation email has been sent to your inbox." 
+          : "Your table reservation has been successfully created. (Email delivery failed)",
       });
       
     } catch (error) {
@@ -191,10 +221,16 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     switch (currentStep) {
       case 1:
         return (
-          <DateSelector
-            selectedDate={bookingData.date}
-            onDateSelect={(date) => updateBookingData({ date })}
-          />
+          <>
+            <RestaurantSelector
+              value={bookingData.restaurantId || ''}
+              onChange={id => updateBookingData({ restaurantId: id })}
+            />
+            <DateSelector
+              selectedDate={bookingData.date}
+              onDateSelect={date => updateBookingData({ date })}
+            />
+          </>
         );
       case 2:
         return (
@@ -209,7 +245,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
             date={bookingData.date!}
             partySize={bookingData.partySize!}
             selectedTime={bookingData.startTime}
-            onTimeSelect={(startTime) => updateBookingData({ startTime })}
+            onTimeSelect={time => updateBookingData({ startTime: time })}
           />
         );
       case 4:
