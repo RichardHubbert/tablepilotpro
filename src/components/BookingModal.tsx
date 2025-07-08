@@ -45,27 +45,12 @@ const steps = [
   { id: 5, title: 'Confirm', icon: CheckCircle },
 ];
 
-// RestaurantSelector component
-function RestaurantSelector({ value, onChange }: { value: string; onChange: (id: string) => void }) {
-  const [restaurants, setRestaurants] = useState<{ id: string; name: string }[]>([]);
-  useEffect(() => {
-    supabase.from('restaurants').select('id, name').then(({ data }) => {
-      if (data) setRestaurants(data);
-    });
-  }, []);
-  return (
-    <select value={value} onChange={e => onChange(e.target.value)} required className="mb-4 w-full border rounded p-2">
-      <option value="">Select a restaurant</option>
-      {restaurants.map(r => (
-        <option key={r.id} value={r.id}>{r.name}</option>
-      ))}
-    </select>
-  );
-}
+// Set Amici Coffee as the default restaurant
+const AMICI_COFFEE_ID = '1';
 
 const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [bookingData, setBookingData] = useState<Partial<BookingData>>({ restaurantId: '', date: undefined });
+  const [bookingData, setBookingData] = useState<Partial<BookingData>>({ restaurantId: AMICI_COFFEE_ID, date: undefined });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmationData, setConfirmationData] = useState<BookingData | null>(null);
   const { toast } = useToast();
@@ -84,7 +69,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
 
   const handleClose = () => {
     setCurrentStep(1);
-    setBookingData({ restaurantId: '', date: undefined });
+    setBookingData({ restaurantId: AMICI_COFFEE_ID, date: undefined });
     setIsSubmitting(false);
     setConfirmationData(null);
     onClose();
@@ -97,7 +82,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return bookingData.restaurantId && bookingData.date;
+        return bookingData.date; // Only require date
       case 2:
         return bookingData.partySize;
       case 3:
@@ -221,16 +206,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     switch (currentStep) {
       case 1:
         return (
-          <>
-            <RestaurantSelector
-              value={bookingData.restaurantId || ''}
-              onChange={id => updateBookingData({ restaurantId: id })}
-            />
-            <DateSelector
-              selectedDate={bookingData.date}
-              onDateSelect={date => updateBookingData({ date })}
-            />
-          </>
+          <DateSelector
+            selectedDate={bookingData.date}
+            onDateSelect={date => setBookingData({ ...bookingData, date })}
+          />
         );
       case 2:
         return (

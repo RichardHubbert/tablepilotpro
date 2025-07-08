@@ -34,7 +34,7 @@ export const sendBookingConfirmationEmail = async (booking: Booking): Promise<bo
       booking_date_time: formattedDateTime,
       party_size: booking.party_size,
       special_requests: booking.special_requests || 'None',
-      restaurant_name: 'Table Pilot Restaurant',
+      restaurant_name: 'Amici Coffee',
       restaurant_address: '123 Main Street, City, Country',
       restaurant_phone: '+1 (555) 123-4567',
       restaurant_email: 'contact@tablepilot.com',

@@ -12,8 +12,18 @@ interface RestaurantProviderProps {
   children: ReactNode;
 }
 
+// Default Amici Coffee restaurant data
+const defaultRestaurant: Restaurant = {
+  id: '24e2799f-60d5-4e3b-bb30-b8049c9ae56d',
+  name: 'Amici Coffee',
+  address: '123 Fine Dining Street, Downtown District',
+  cuisine: 'Coffee & Dining',
+  rating: 4.8,
+  imageUrl: '/amicicoffee/amicicoffee.jpg'
+};
+
 export const RestaurantProvider: React.FC<RestaurantProviderProps> = ({ children }) => {
-  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | undefined>();
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | undefined>(defaultRestaurant);
 
   return (
     <RestaurantContext.Provider value={{ selectedRestaurant, setSelectedRestaurant }}>

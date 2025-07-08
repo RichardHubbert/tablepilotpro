@@ -1,18 +1,15 @@
 import React from 'react';
 import { Menu, X, Calendar, LogOut, User, Home, Info, Coffee } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import RestaurantSelector, { Restaurant } from '@/components/RestaurantSelector';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 interface MobileMenuProps {
   onBookingClick?: () => void;
-  selectedRestaurant?: Restaurant;
-  onRestaurantChange?: (restaurant: Restaurant) => void;
 }
 
-const MobileMenu = ({ onBookingClick, selectedRestaurant, onRestaurantChange }: MobileMenuProps) => {
+const MobileMenu = ({ onBookingClick }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const { user, signOut } = useAuth();
   const { toast } = useToast();
@@ -68,7 +65,8 @@ const MobileMenu = ({ onBookingClick, selectedRestaurant, onRestaurantChange }: 
       {isOpen && (
         <div className="fixed inset-0 z-50 bg-white shadow-lg">
           <div className="container mx-auto px-4 py-8">
-            <div className="flex justify-end mb-8">
+            <div className="flex justify-between items-center mb-8">
+              <h1 className="text-2xl font-bold text-gray-900">Amici Coffee</h1>
               <Button 
                 variant="ghost" 
                 size="sm" 
@@ -77,14 +75,6 @@ const MobileMenu = ({ onBookingClick, selectedRestaurant, onRestaurantChange }: 
               >
                 <X className="h-6 w-6" />
               </Button>
-            </div>
-            
-            {/* Restaurant Selector for Mobile */}
-            <div className="mb-6">
-              <RestaurantSelector
-                selectedRestaurant={selectedRestaurant}
-                onRestaurantChange={onRestaurantChange || (() => {})}
-              />
             </div>
             
             <nav className="flex flex-col space-y-6">

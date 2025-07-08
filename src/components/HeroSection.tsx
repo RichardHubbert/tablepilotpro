@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Calendar, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,9 +14,9 @@ const HeroSection = ({ onBookingClick, selectedRestaurant }: HeroSectionProps) =
     <section className="relative min-h-[80vh] flex items-center">
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
-        <img 
-          src={selectedRestaurant?.imageUrl || "/lovable-uploads/d1a98a63-2cc5-4972-9f0d-87d62451a02b.png"}
-          alt={`${selectedRestaurant?.name || 'Table Pilot'} Restaurant background`}
+        <img
+          src={selectedRestaurant?.imageUrl || `${import.meta.env.BASE_URL}amicicoffee.jpg`}
+          alt="Amici Coffee background"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-black/30"></div>
@@ -29,9 +28,9 @@ const HeroSection = ({ onBookingClick, selectedRestaurant }: HeroSectionProps) =
           {/* Left Side - Title and Description */}
           <div className="space-y-6 text-white">
             <h1 className="text-4xl md:text-6xl font-bold">
-              {selectedRestaurant?.name || 'Table Pilot'}
+              {selectedRestaurant?.name || 'Amici Coffee'}
               <span className="block text-2xl md:text-3xl text-amber-400 font-normal">
-                {selectedRestaurant?.cuisine || 'Restaurant'}
+                {selectedRestaurant?.cuisine || 'Coffee & Dining'}
               </span>
             </h1>
             
@@ -46,7 +45,7 @@ const HeroSection = ({ onBookingClick, selectedRestaurant }: HeroSectionProps) =
             <p className="text-xl leading-relaxed">
               {selectedRestaurant 
                 ? `Experience ${selectedRestaurant.cuisine.toLowerCase()} cuisine at ${selectedRestaurant.name}. Reserve your table for an unforgettable culinary journey.`
-                : 'Experience fine dining with breathtaking views. Reserve your table for an unforgettable culinary journey.'
+                : 'Experience artisanal coffee and delicious dining in a warm, welcoming atmosphere. Reserve your table for an unforgettable experience.'
               }
             </p>
             

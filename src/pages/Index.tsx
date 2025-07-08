@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import BookingModal from '@/components/BookingModal';
 import NavigationHeader from '@/components/NavigationHeader';
@@ -11,11 +10,11 @@ import { useRestaurant } from '@/contexts/RestaurantContext';
 const Index = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const { user } = useAuth();
-  const { selectedRestaurant, setSelectedRestaurant } = useRestaurant();
+  const { selectedRestaurant } = useRestaurant();
 
   const handleBookingClick = () => {
     if (!user) {
-      window.location.href = '/auth';
+      window.location.href = '/amicicoffee/auth';
       return;
     }
     setIsBookingModalOpen(true);
@@ -25,8 +24,6 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <NavigationHeader 
         onBookingClick={handleBookingClick}
-        selectedRestaurant={selectedRestaurant}
-        onRestaurantChange={setSelectedRestaurant}
       />
       <HeroSection 
         onBookingClick={handleBookingClick}

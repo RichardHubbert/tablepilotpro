@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -96,7 +95,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({ bookingData, 
               <MapPin className="h-5 w-5 text-green-600" />
               <div>
                 <p className="font-medium text-green-800">Location</p>
-                <p className="text-green-700">Table Pilot Restaurant</p>
+                <p className="text-green-700">Amici Coffee</p>
               </div>
             </div>
           </div>

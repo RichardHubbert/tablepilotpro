@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -32,14 +31,14 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
               Authentication Required
             </CardTitle>
             <CardDescription className="text-gray-600">
-              Please sign in to make a reservation at Table Pilot
+              Please sign in to make a reservation at Amici Coffee
             </CardDescription>
           </CardHeader>
           
           <CardContent className="space-y-4">
             <Button 
               className="w-full bg-amber-600 hover:bg-amber-700"
-              onClick={() => window.location.href = '/auth'}
+              onClick={() => window.location.href = '/amicicoffee/auth'}
             >
               <LogIn className="mr-2 h-4 w-4" />
               Sign In
@@ -48,7 +47,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
             <Button 
               variant="outline"
               className="w-full"
-              onClick={() => window.location.href = '/auth'}
+              onClick={() => window.location.href = '/amicicoffee/auth'}
             >
               <UserPlus className="mr-2 h-4 w-4" />
               Create Account

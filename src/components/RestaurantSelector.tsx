@@ -30,7 +30,7 @@ interface RestaurantSelectorProps {
 const FALLBACK_RESTAURANTS: Restaurant[] = [
   {
     id: '1',
-    name: 'Table Pilot',
+    name: 'Amici Coffee',
     address: '123 Fine Dining Street, Downtown District',
     cuisine: 'Fine Dining',
     rating: 4.8,

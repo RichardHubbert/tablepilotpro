@@ -50,7 +50,7 @@ CREATE TRIGGER update_restaurants_updated_at
 
 -- Insert some sample restaurants
 INSERT INTO restaurants (name, address, cuisine, rating, image_url, phone, email, description) VALUES
-('Table Pilot', '123 Fine Dining Street, Downtown District', 'Fine Dining', 4.8, '/lovable-uploads/d1a98a63-2cc5-4972-9f0d-87d62451a02b.png', '(555) 123-4567', 'contact@tablepilot.com', 'Experience fine dining with breathtaking views. Reserve your table for an unforgettable culinary journey.'),
+('Amici Coffee', '123 Fine Dining Street, Downtown District', 'Fine Dining', 4.8, '/lovable-uploads/d1a98a63-2cc5-4972-9f0d-87d62451a02b.png', '(555) 123-4567', 'contact@tablepilot.com', 'Experience fine dining with breathtaking views. Reserve your table for an unforgettable culinary journey.'),
 ('Bella Vista', '456 Ocean View Drive, Waterfront', 'Italian', 4.6, '/lovable-uploads/1cf1aa04-79c2-4d2b-b395-ab316329e682.png', '(555) 234-5678', 'info@bellavista.com', 'Authentic Italian cuisine with stunning ocean views. Fresh ingredients and traditional recipes.'),
 ('Sakura Sushi', '789 Cherry Blossom Lane, East District', 'Japanese', 4.7, '/lovable-uploads/22fb2312-3451-410b-b60b-065eee5f03d4.png', '(555) 345-6789', 'reservations@sakura.com', 'Premium sushi and Japanese cuisine in an elegant setting. Fresh fish and traditional preparation methods.'),
 ('Le Petit Bistro', '321 French Quarter, Old Town', 'French', 4.5, '/lovable-uploads/50a6f4cc-7462-41e4-9627-b959d48a17d0.png', '(555) 456-7890', 'contact@lepetitbistro.com', 'Charming French bistro serving classic dishes with a modern twist. Cozy atmosphere and excellent wine selection.'),

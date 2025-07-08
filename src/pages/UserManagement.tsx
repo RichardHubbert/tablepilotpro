@@ -228,7 +228,7 @@ const UserManagement: React.FC = () => {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => window.location.href = '/auth'}
+                  onClick={() => window.location.href = '/amicicoffee/auth'}
                 >
                   Sign In
                 </Button>
@@ -289,7 +289,7 @@ const UserManagement: React.FC = () => {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => window.location.href = '/auth'}
+                  onClick={() => window.location.href = '/amicicoffee/auth'}
                 >
                   Sign In
                 </Button>
@@ -342,7 +342,7 @@ const UserManagement: React.FC = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => window.location.href = '/auth'}
+                onClick={() => window.location.href = '/amicicoffee/auth'}
               >
                 Sign In
               </Button>

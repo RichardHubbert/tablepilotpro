@@ -1,21 +1,17 @@
-
 import React from 'react';
 import { LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import UserMenu from '@/components/UserMenu';
 import MobileMenu from '@/components/MobileMenu';
-import RestaurantSelector, { Restaurant } from '@/components/RestaurantSelector';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 
 interface NavigationHeaderProps {
   onBookingClick?: () => void;
-  selectedRestaurant?: Restaurant;
-  onRestaurantChange?: (restaurant: Restaurant) => void;
 }
 
-const NavigationHeader = ({ onBookingClick, selectedRestaurant, onRestaurantChange }: NavigationHeaderProps) => {
+const NavigationHeader = ({ onBookingClick }: NavigationHeaderProps) => {
   const { user, signOut } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -39,12 +35,9 @@ const NavigationHeader = ({ onBookingClick, selectedRestaurant, onRestaurantChan
 
   return (
     <div className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between">
-      {/* Restaurant Selector */}
-      <div className="flex-1 max-w-xs">
-        <RestaurantSelector
-          selectedRestaurant={selectedRestaurant}
-          onRestaurantChange={onRestaurantChange || (() => {})}
-        />
+      {/* Logo/Brand */}
+      <div className="flex-1">
+        <h1 className="text-2xl font-bold text-white">Amici Coffee</h1>
       </div>
       
       {/* Right side navigation */}
@@ -52,8 +45,6 @@ const NavigationHeader = ({ onBookingClick, selectedRestaurant, onRestaurantChan
         {/* Mobile Menu (only visible on mobile) */}
         <MobileMenu 
           onBookingClick={onBookingClick}
-          selectedRestaurant={selectedRestaurant}
-          onRestaurantChange={onRestaurantChange}
         />
         
         {/* Desktop Navigation (hidden on mobile) */}
@@ -72,7 +63,7 @@ const NavigationHeader = ({ onBookingClick, selectedRestaurant, onRestaurantChan
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => window.location.href = '/admin'}
+              onClick={() => window.location.href = '/amicicoffee/admin'}
             >
               Admin Dashboard
             </Button>
@@ -81,7 +72,7 @@ const NavigationHeader = ({ onBookingClick, selectedRestaurant, onRestaurantChan
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => window.location.href = '/auth'}
+            onClick={() => window.location.href = '/amicicoffee/auth'}
           >
             Sign In
           </Button>
