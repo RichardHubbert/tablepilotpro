@@ -15,7 +15,7 @@ const HeroSection = ({ onBookingClick, selectedRestaurant }: HeroSectionProps) =
       {/* Background Image */}
       <div className="absolute inset-0 z-0">
         <img
-          src={selectedRestaurant?.imageUrl || `${import.meta.env.BASE_URL}amicicoffee.jpg`}
+          src={selectedRestaurant?.imageUrl || "/amicicoffee.jpg"}
           alt="Amici Coffee background"
           className="w-full h-full object-cover"
         />
@@ -28,7 +28,7 @@ const HeroSection = ({ onBookingClick, selectedRestaurant }: HeroSectionProps) =
           {/* Left Side - Title and Description */}
           <div className="space-y-6 text-white">
             <h1 className="text-4xl md:text-6xl font-bold">
-              {selectedRestaurant?.name || 'Amici Coffee'}
+              {selectedRestaurant?.name || 'Table Pilot Pro'}
               <span className="block text-2xl md:text-3xl text-amber-400 font-normal">
                 {selectedRestaurant?.cuisine || 'Coffee & Dining'}
               </span>
@@ -45,7 +45,7 @@ const HeroSection = ({ onBookingClick, selectedRestaurant }: HeroSectionProps) =
             <p className="text-xl leading-relaxed">
               {selectedRestaurant 
                 ? `Experience ${selectedRestaurant.cuisine.toLowerCase()} cuisine at ${selectedRestaurant.name}. Reserve your table for an unforgettable culinary journey.`
-                : 'Experience artisanal coffee and delicious dining in a warm, welcoming atmosphere. Reserve your table for an unforgettable experience.'
+                : 'Experience artisanal coffee and delicious dining in a warm, welcoming atmosphere. Reserve your table for an unforgettable experience at Table Pilot Pro.'
               }
             </p>
             

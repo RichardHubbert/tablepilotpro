@@ -257,7 +257,7 @@ export const fetchAllBookings = async (): Promise<Booking[]> => {
   return (data || []).map(booking => ({
     ...booking,
     status: booking.status as 'confirmed' | 'cancelled' | 'completed',
-    restaurant: (booking.restaurant && typeof booking.restaurant === 'object' && 'id' in booking.restaurant)
+    restaurant: (booking.restaurant ?? undefined) && typeof booking.restaurant === 'object' && 'id' in booking.restaurant
       ? booking.restaurant as { id: string; name: string; cuisine: string }
       : undefined
   }));
@@ -287,4 +287,31 @@ export const getNextReservationForTable = (tableId: string, allBookings: Booking
     });
   
   return futureBookings.length > 0 ? futureBookings[0] : null;
+};
+
+// Delete a booking by ID
+export const deleteBooking = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from('bookings')
+    .delete()
+    .eq('id', id);
+  if (error) {
+    console.error('Error deleting booking:', error);
+    throw error;
+  }
+};
+
+// Update a booking by ID
+export const updateBooking = async (id: string, updates: Partial<Booking>): Promise<Booking> => {
+  const { data, error } = await supabase
+    .from('bookings')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) {
+    console.error('Error updating booking:', error);
+    throw error;
+  }
+  return data as Booking;
 };

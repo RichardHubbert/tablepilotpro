@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAdmin } from '@/hooks/useAdmin';
 import { Restaurant, fetchAllRestaurants, deleteRestaurant, restoreRestaurant } from '@/services/restaurantService';
 import RestaurantForm from '@/components/RestaurantForm';
+import NavigationHeader from '@/components/NavigationHeader';
 
 const RestaurantManagement: React.FC = () => {
   const { isAdmin, user } = useAdmin();
@@ -161,163 +162,166 @@ const RestaurantManagement: React.FC = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Restaurant Management</h1>
-          <p className="text-gray-600 mt-2">
-            Manage all restaurants in the system. Only visible to admin users.
-          </p>
-        </div>
-        <Button onClick={handleAddNew} className="flex items-center gap-2">
-          <Plus className="h-4 w-4" />
-          Add Restaurant
-        </Button>
-      </div>
-
-      {/* Search and Filters */}
-      <Card className="mb-6">
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                placeholder="Search restaurants..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Button
-              variant="outline"
-              onClick={() => setShowInactive(!showInactive)}
-              className="flex items-center gap-2"
-            >
-              {showInactive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              {showInactive ? 'Hide Inactive' : 'Show Inactive'}
-            </Button>
+    <>
+      <NavigationHeader />
+      <div className="container mx-auto px-4 py-8 mt-24">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Restaurant Management</h1>
+            <p className="text-gray-600 mt-2">
+              Manage all restaurants in the system. Only visible to admin users.
+            </p>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Restaurants List */}
-      {isLoading ? (
-        <div className="text-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading restaurants...</p>
+          <Button onClick={handleAddNew} className="flex items-center gap-2">
+            <Plus className="h-4 w-4" />
+            Add Restaurant
+          </Button>
         </div>
-      ) : filteredRestaurants.length === 0 ? (
-        <Card>
+
+        {/* Search and Filters */}
+        <Card className="mb-6">
           <CardContent className="pt-6">
-            <div className="text-center">
-              <p className="text-gray-600">
-                {searchQuery ? 'No restaurants found matching your search.' : 'No restaurants found.'}
-              </p>
+            <div className="flex flex-col md:flex-row gap-4">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search restaurants..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowInactive(!showInactive)}
+                className="flex items-center gap-2"
+              >
+                {showInactive ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showInactive ? 'Hide Inactive' : 'Show Inactive'}
+              </Button>
             </div>
           </CardContent>
         </Card>
-      ) : (
-        <div className="grid gap-4">
-          {filteredRestaurants.map((restaurant) => (
-            <Card key={restaurant.id} className={!restaurant.is_active ? 'opacity-60' : ''}>
-              <CardContent className="pt-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-4 flex-1">
-                    {restaurant.image_url && (
-                      <img
-                        src={restaurant.image_url}
-                        alt={restaurant.name}
-                        className="w-16 h-16 rounded-lg object-cover"
-                      />
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-lg font-semibold text-gray-900 truncate">
-                          {restaurant.name}
-                        </h3>
-                        <Badge variant={restaurant.is_active ? "default" : "secondary"}>
-                          {restaurant.is_active ? 'Active' : 'Inactive'}
-                        </Badge>
-                        {restaurant.rating && (
-                          <div className="flex items-center gap-1">
-                            <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                            <span className="text-sm font-medium">{restaurant.rating}</span>
-                          </div>
+
+        {/* Restaurants List */}
+        {isLoading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-amber-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading restaurants...</p>
+          </div>
+        ) : filteredRestaurants.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-gray-600">
+                  {searchQuery ? 'No restaurants found matching your search.' : 'No restaurants found.'}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4">
+            {filteredRestaurants.map((restaurant) => (
+              <Card key={restaurant.id} className={!restaurant.is_active ? 'opacity-60' : ''}>
+                <CardContent className="pt-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-start gap-4 flex-1">
+                      {restaurant.image_url && (
+                        <img
+                          src={restaurant.image_url}
+                          alt={restaurant.name}
+                          className="w-16 h-16 rounded-lg object-cover"
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="text-lg font-semibold text-gray-900 truncate">
+                            {restaurant.name}
+                          </h3>
+                          <Badge variant={restaurant.is_active ? "default" : "secondary"}>
+                            {restaurant.is_active ? 'Active' : 'Inactive'}
+                          </Badge>
+                          {restaurant.rating && (
+                            <div className="flex items-center gap-1">
+                              <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
+                              <span className="text-sm font-medium">{restaurant.rating}</span>
+                            </div>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-600 mb-1">
+                          <strong>Cuisine:</strong> {restaurant.cuisine}
+                        </p>
+                        <p className="text-sm text-gray-600 mb-1">
+                          <strong>Address:</strong> {restaurant.address}
+                        </p>
+                        {restaurant.phone && (
+                          <p className="text-sm text-gray-600 mb-1">
+                            <strong>Phone:</strong> {restaurant.phone}
+                          </p>
+                        )}
+                        {restaurant.email && (
+                          <p className="text-sm text-gray-600 mb-1">
+                            <strong>Email:</strong> {restaurant.email}
+                          </p>
+                        )}
+                        {restaurant.description && (
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            {restaurant.description}
+                          </p>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 mb-1">
-                        <strong>Cuisine:</strong> {restaurant.cuisine}
-                      </p>
-                      <p className="text-sm text-gray-600 mb-1">
-                        <strong>Address:</strong> {restaurant.address}
-                      </p>
-                      {restaurant.phone && (
-                        <p className="text-sm text-gray-600 mb-1">
-                          <strong>Phone:</strong> {restaurant.phone}
-                        </p>
-                      )}
-                      {restaurant.email && (
-                        <p className="text-sm text-gray-600 mb-1">
-                          <strong>Email:</strong> {restaurant.email}
-                        </p>
-                      )}
-                      {restaurant.description && (
-                        <p className="text-sm text-gray-600 line-clamp-2">
-                          {restaurant.description}
-                        </p>
-                      )}
                     </div>
-                  </div>
-                  <div className="flex items-center gap-2 ml-4">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleEdit(restaurant)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    {restaurant.is_active ? (
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="sm">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Restaurant</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete "{restaurant.name}"? This action can be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(restaurant)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    ) : (
+                    <div className="flex items-center gap-2 ml-4">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleRestore(restaurant)}
+                        onClick={() => handleEdit(restaurant)}
                       >
-                        Restore
+                        <Edit className="h-4 w-4" />
                       </Button>
-                    )}
+                      {restaurant.is_active ? (
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="outline" size="sm">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Restaurant</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete "{restaurant.name}"? This action can be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(restaurant)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      ) : (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRestore(restaurant)}
+                        >
+                          Restore
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+      </div>
+    </>
   );
 };
 

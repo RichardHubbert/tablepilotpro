@@ -15,11 +15,11 @@ interface RestaurantProviderProps {
 // Default Amici Coffee restaurant data
 const defaultRestaurant: Restaurant = {
   id: '24e2799f-60d5-4e3b-bb30-b8049c9ae56d',
-  name: 'Amici Coffee',
+  name: 'Table Pilot Pro',
   address: '123 Fine Dining Street, Downtown District',
   cuisine: 'Coffee & Dining',
   rating: 4.8,
-  imageUrl: '/amicicoffee/amicicoffee.jpg'
+  imageUrl: '/amicicoffee.jpg'
 };
 
 export const RestaurantProvider: React.FC<RestaurantProviderProps> = ({ children }) => {

@@ -38,7 +38,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           <CardContent className="space-y-4">
             <Button 
               className="w-full bg-amber-600 hover:bg-amber-700"
-              onClick={() => window.location.href = '/amicicoffee/auth'}
+              onClick={() => window.location.href = '/auth'}
             >
               <LogIn className="mr-2 h-4 w-4" />
               Sign In
@@ -47,7 +47,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
             <Button 
               variant="outline"
               className="w-full"
-              onClick={() => window.location.href = '/amicicoffee/auth'}
+              onClick={() => window.location.href = '/auth'}
             >
               <UserPlus className="mr-2 h-4 w-4" />
               Create Account

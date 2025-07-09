@@ -22,6 +22,7 @@ import { useNavigate } from 'react-router-dom';
 import { User, fetchAllUsers, deleteUser, restoreUser, getUserCountByRole } from '@/services/userService';
 import UserForm from '@/components/UserForm';
 import UserMenu from '@/components/UserMenu';
+import NavigationHeader from '@/components/NavigationHeader';
 
 const UserManagement: React.FC = () => {
   const { isAdmin, user } = useAdmin();
@@ -228,7 +229,7 @@ const UserManagement: React.FC = () => {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => window.location.href = '/amicicoffee/auth'}
+                  onClick={() => window.location.href = '/auth'}
                 >
                   Sign In
                 </Button>
@@ -289,7 +290,7 @@ const UserManagement: React.FC = () => {
                 <Button 
                   variant="outline" 
                   size="sm"
-                  onClick={() => window.location.href = '/amicicoffee/auth'}
+                  onClick={() => window.location.href = '/auth'}
                 >
                   Sign In
                 </Button>
@@ -310,48 +311,9 @@ const UserManagement: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation header */}
-      <header className="bg-white border-b shadow-sm py-3 px-4 md:px-6 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-900">User Management</h1>
-          
-          <div className="flex items-center gap-2 md:gap-4">
-            {authUser ? (
-              <>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => window.location.href = '/admin'}
-                  className="hidden md:flex"
-                >
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Admin
-                </Button>
-                <UserMenu />
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span className="hidden md:inline">Logout</span>
-                </Button>
-              </>
-            ) : (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={() => window.location.href = '/amicicoffee/auth'}
-              >
-                Sign In
-              </Button>
-            )}
-          </div>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-4 py-8">
+    <>
+      <NavigationHeader />
+      <div className="container mx-auto px-4 py-8 mt-24">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
@@ -539,7 +501,7 @@ const UserManagement: React.FC = () => {
         </div>
       )}
       </div>
-    </div>
+    </>
   );
 };
 

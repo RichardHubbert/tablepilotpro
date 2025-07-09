@@ -66,7 +66,7 @@ const MobileMenu = ({ onBookingClick }: MobileMenuProps) => {
         <div className="fixed inset-0 z-50 bg-white shadow-lg">
           <div className="container mx-auto px-4 py-8">
             <div className="flex justify-between items-center mb-8">
-              <h1 className="text-2xl font-bold text-gray-900">Amici Coffee</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Table Pilot Pro</h1>
               <Button 
                 variant="ghost" 
                 size="sm" 

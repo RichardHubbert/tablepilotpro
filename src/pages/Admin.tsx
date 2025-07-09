@@ -61,7 +61,7 @@ const Admin = () => {
               <Button 
                 variant="outline" 
                 size="sm"
-                onClick={() => window.location.href = '/amicicoffee/auth'}
+                onClick={() => window.location.href = '/auth'}
               >
                 Sign In
               </Button>

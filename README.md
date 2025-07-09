@@ -1,8 +1,12 @@
-# Welcome to your Lovable project
+# Table Pilot Pro
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/572fb16c-338f-484d-a597-4d5dc1a7a5cc
+**Development URL**: https://lovable.dev/projects/572fb16c-338f-484d-a597-4d5dc1a7a5cc
+
+**Production URL**: https://tablepilot.co.uk
+
+**Project Name**: Table Pilot Pro
 
 ## How can I edit this code?
 
@@ -92,6 +96,8 @@ This project is built with:
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/572fb16c-338f-484d-a597-4d5dc1a7a5cc) and click on Share -> Publish.
+
+The production site will be available at: https://tablepilot.co.uk
 
 ## Can I connect a custom domain to my Lovable project?
 

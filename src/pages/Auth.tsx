@@ -84,9 +84,22 @@ const Auth = () => {
     setLoading(true);
     
     console.log('Auth request starting - using Supabase URL:', SUPABASE_URL);
+    console.log('Attempting to login with email:', email);
 
     try {
       if (isLogin) {
+        console.log('Starting login process...');
+        
+        // First, let's check if the user exists
+        console.log('Checking if user exists...');
+        const { data: existingUser, error: checkError } = await supabase.auth.admin.listUsers();
+        
+        if (checkError) {
+          console.log('Could not check existing users (normal for client-side):', checkError.message);
+        } else {
+          console.log('Existing users found:', existingUser?.users?.length || 0);
+        }
+        
         const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -94,10 +107,16 @@ const Auth = () => {
 
         if (error) {
           console.error('Login error:', error);
+          console.error('Error details:', {
+            message: error.message,
+            status: error.status,
+            name: error.name
+          });
+          
           if (error.message.includes('Invalid login credentials')) {
             toast({
               title: "Login Failed",
-              description: "Invalid email or password. Please try again.",
+              description: "Invalid email or password. Please check your credentials and try again. If you don't have an account, please create one first.",
               variant: "destructive",
             });
           } else {
@@ -110,6 +129,7 @@ const Auth = () => {
           return;
         }
 
+        console.log('Login successful!');
         toast({
           title: "Welcome back!",
           description: "You have successfully logged in.",
@@ -119,6 +139,17 @@ const Auth = () => {
         console.log('Attempting signup with:', { email, fullName });
         console.log('Using Supabase URL:', SUPABASE_URL);
         
+        // Validate password strength
+        if (password.length < 6) {
+          toast({
+            title: "Password Too Short",
+            description: "Password must be at least 6 characters long.",
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+        
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -126,7 +157,7 @@ const Auth = () => {
             data: {
               full_name: fullName,
             },
-            emailRedirectTo: `${window.location.origin}/amicicoffee/auth`,
+            emailRedirectTo: `${window.location.origin}/auth`,
           },
         });
 

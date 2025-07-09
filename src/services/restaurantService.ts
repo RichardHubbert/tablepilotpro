@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 
-export type Restaurant = TablesInsert<'restaurants'> & { id: string };
+export type Restaurant = TablesInsert<'restaurants'> & { id: string; county?: string };
 export type RestaurantUpdate = TablesUpdate<'restaurants'>;
 
 // Fetch all active restaurants

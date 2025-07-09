@@ -20,10 +20,15 @@ import CustomerForm from '@/components/CustomerForm';
 import BookingConfirmation from '@/components/BookingConfirmation';
 import { createBooking } from '@/services/supabaseBookingService';
 import { sendBookingConfirmationEmail } from '@/services/emailService';
+import { fetchRestaurants, Restaurant } from '@/services/restaurantService';
 
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  restaurant?: Restaurant;
+  initialDate?: string;
+  initialTime?: string;
+  initialPartySize?: string;
 }
 
 export interface BookingData {
@@ -45,15 +50,62 @@ const steps = [
   { id: 5, title: 'Confirm', icon: CheckCircle },
 ];
 
-// Set Amici Coffee as the default restaurant
-const AMICI_COFFEE_ID = '1';
-
-const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
+const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, restaurant, initialDate, initialTime, initialPartySize }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [bookingData, setBookingData] = useState<Partial<BookingData>>({ restaurantId: AMICI_COFFEE_ID, date: undefined });
+  const [bookingData, setBookingData] = useState<Partial<BookingData>>({ restaurantId: '', date: undefined });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmationData, setConfirmationData] = useState<BookingData | null>(null);
   const { toast } = useToast();
+  const [counties] = useState(["Bedfordshire", "Cambridgeshire", "Hertfordshire"]);
+  const [selectedCounty, setSelectedCounty] = useState<string>("");
+  const [restaurantOptions, setRestaurantOptions] = useState<Restaurant[]>([]);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  // Fetch restaurants when county changes
+  useEffect(() => {
+    const fetchAndSetRestaurants = async () => {
+      const all = await fetchRestaurants();
+      const filtered = selectedCounty ? all.filter(r => r.county && r.county === selectedCounty) : all;
+      setRestaurantOptions(filtered);
+      // If current restaurantId is not in filtered, reset
+      if (!filtered.find(r => r.id === bookingData.restaurantId)) {
+        setBookingData(b => ({ ...b, restaurantId: filtered[0]?.id }));
+      }
+    };
+    fetchAndSetRestaurants();
+  }, [selectedCounty]);
+
+  // Pre-fill county and restaurant if opened from a card
+  useEffect(() => {
+    if (isOpen && restaurant) {
+      setSelectedCounty(restaurant.county || "");
+      // Ensure restaurant is set in booking data
+      setBookingData(prev => ({
+        ...prev,
+        restaurantId: restaurant.id
+      }));
+    }
+  }, [isOpen, restaurant]);
+
+  // When restaurantOptions change, ensure bookingData.restaurantId is a valid UUID
+  useEffect(() => {
+    if (restaurantOptions.length > 0 && !restaurantOptions.find(r => r.id === bookingData.restaurantId)) {
+      setBookingData(b => ({ ...b, restaurantId: restaurantOptions[0].id }));
+    }
+  }, [restaurantOptions]);
+
+  // Pre-fill form with initial values from filter selections
+  useEffect(() => {
+    if (isOpen) {
+      const newBookingData: Partial<BookingData> = {
+        restaurantId: restaurant?.id || bookingData.restaurantId || '',
+        date: initialDate ? new Date(initialDate) : undefined,
+        startTime: initialTime || undefined,
+        partySize: initialPartySize ? parseInt(initialPartySize) : undefined,
+      };
+      setBookingData(newBookingData);
+    }
+  }, [isOpen, initialDate, initialTime, initialPartySize, restaurant]);
 
   const handleNext = () => {
     if (currentStep < steps.length) {
@@ -69,7 +121,7 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
 
   const handleClose = () => {
     setCurrentStep(1);
-    setBookingData({ restaurantId: AMICI_COFFEE_ID, date: undefined });
+    setBookingData({ restaurantId: '', date: undefined });
     setIsSubmitting(false);
     setConfirmationData(null);
     onClose();
@@ -95,6 +147,18 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
   };
 
   const handleSubmit = async () => {
+    setSubmitError(null);
+    console.log('🔍 Debug booking data:', {
+      restaurantId: bookingData.restaurantId,
+      restaurant: restaurant,
+      hasRestaurant: !!bookingData.restaurantId,
+      hasDate: !!bookingData.date,
+      hasStartTime: !!bookingData.startTime,
+      hasPartySize: !!bookingData.partySize,
+      hasCustomerName: !!bookingData.customerName,
+      hasCustomerEmail: !!bookingData.customerEmail
+    });
+
     if (!bookingData.restaurantId || !bookingData.date || !bookingData.startTime || !bookingData.partySize || 
         !bookingData.customerName || !bookingData.customerEmail) {
       console.error('❌ Missing required booking data:', {
@@ -110,29 +174,16 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
         description: "Please fill in all required fields, including restaurant selection",
         variant: "destructive"
       });
+      setSubmitError('Please fill in all required fields, including restaurant selection.');
       return;
     }
 
     setIsSubmitting(true);
-    console.log('🎯 Starting booking submission process...');
-    console.log('📱 Device info:', {
-      userAgent: navigator.userAgent,
-      screenSize: `${screen.width}x${screen.height}`,
-      windowSize: `${window.innerWidth}x${window.innerHeight}`,
-      onLine: navigator.onLine,
-      connection: (navigator as NavigatorWithConnection).connection ? {
-        effectiveType: (navigator as NavigatorWithConnection).connection.effectiveType,
-        downlink: (navigator as NavigatorWithConnection).connection.downlink,
-        rtt: (navigator as NavigatorWithConnection).connection.rtt
-      } : 'Not available'
-    });
-    
     try {
       console.log('📝 Submitting booking with data:', {
         ...bookingData,
         date: bookingData.date?.toISOString()
       });
-      
       const result = await createBooking({
         restaurantId: bookingData.restaurantId,
         date: bookingData.date,
@@ -143,7 +194,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
         customerPhone: bookingData.customerPhone,
         specialRequests: bookingData.specialRequests
       });
-      
       console.log('🎉 Booking submission successful!', result);
       // Convert Booking to BookingData
       const confirmedBooking: BookingData = {
@@ -172,29 +222,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
       
     } catch (error) {
       console.error('💥 Booking submission failed:', error);
-      console.error('🔍 Error details:', {
-        message: error instanceof Error ? error.message : 'Unknown error',
-        stack: error instanceof Error ? error.stack : 'No stack trace',
-        type: typeof error,
-        timestamp: new Date().toISOString()
-      });
-      
-      // Show different error messages based on the type of error
-      let errorMessage = "There was an error creating your booking. Please try again.";
-      
-      if (error instanceof Error) {
-        if (error.message.includes('connection') || error.message.includes('network')) {
-          errorMessage = "Network connection issue. Please check your internet connection and try again.";
-        } else if (error.message.includes('timeout')) {
-          errorMessage = "Request timed out. Please try again.";
-        } else if (error.message.includes('No suitable table')) {
-          errorMessage = "No suitable table available for your party size and selected time.";
-        }
-      }
-      
+      setSubmitError('Booking failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
       toast({
         title: "Booking Failed",
-        description: errorMessage,
+        description: error instanceof Error ? error.message : 'Unknown error',
         variant: "destructive"
       });
     } finally {
@@ -206,10 +237,38 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
     switch (currentStep) {
       case 1:
         return (
-          <DateSelector
-            selectedDate={bookingData.date}
-            onDateSelect={date => setBookingData({ ...bookingData, date })}
-          />
+          <>
+            <div className="mb-4">
+              <label className="block mb-1 font-medium">County</label>
+              <select
+                className="border rounded px-3 py-2 w-full"
+                value={selectedCounty}
+                onChange={e => setSelectedCounty(e.target.value)}
+              >
+                <option value="">Select county</option>
+                {counties.map(c => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1 font-medium">Restaurant</label>
+              <select
+                className="border rounded px-3 py-2 w-full"
+                value={bookingData.restaurantId}
+                onChange={e => setBookingData({ ...bookingData, restaurantId: e.target.value })}
+                required
+              >
+                {restaurantOptions.map(r => (
+                  <option key={r.id} value={r.id}>{r.name}</option>
+                ))}
+              </select>
+            </div>
+            <DateSelector
+              selectedDate={bookingData.date}
+              onDateSelect={date => setBookingData({ ...bookingData, date })}
+            />
+          </>
         );
       case 2:
         return (
@@ -293,6 +352,11 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose }) => {
             {renderStepContent()}
           </CardContent>
         </Card>
+
+        {/* Show error if booking fails */}
+        {submitError && (
+          <div className="text-red-600 text-sm mt-2 text-center">{submitError}</div>
+        )}
 
         {/* Navigation Buttons */}
         {currentStep < 5 && (
