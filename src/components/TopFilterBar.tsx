@@ -31,14 +31,22 @@ const getNext30Days = () => {
 
 const getDaysInMonth = (year: number, month: number) => {
   const days: string[] = [];
-  const date = new Date(year, month - 1, 1);
   const lastDay = new Date(year, month, 0).getDate();
-  
+  const now = new Date();
+  const todayYear = now.getFullYear();
+  const todayMonth = now.getMonth() + 1;
+  const todayDate = now.getDate();
+
   for (let day = 1; day <= lastDay; day++) {
-    const currentDate = new Date(year, month - 1, day);
-    // Only include dates from today onwards
-    if (currentDate >= new Date(new Date().setHours(0, 0, 0, 0))) {
-      days.push(currentDate.toISOString().split('T')[0]);
+    if (
+      (year === todayYear && month === todayMonth && day >= todayDate) ||
+      (year !== todayYear || month !== todayMonth)
+    ) {
+      // Use local time for formatting
+      const yyyy = year.toString().padStart(4, '0');
+      const mm = month.toString().padStart(2, '0');
+      const dd = day.toString().padStart(2, '0');
+      days.push(`${yyyy}-${mm}-${dd}`);
     }
   }
   return days;

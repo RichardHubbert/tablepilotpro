@@ -297,7 +297,7 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
                 id="phone"
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
-                placeholder="(555) 123-4567"
+                placeholder="+44 20 7946 0958"
               />
             </div>
 

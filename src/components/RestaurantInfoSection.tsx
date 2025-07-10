@@ -41,8 +41,8 @@ const RestaurantInfoSection = ({ onBookingClick, selectedRestaurant }: Restauran
               <div className="flex items-start space-x-4">
                 <Phone className="h-6 w-6 text-amber-600 mt-1" />
                 <div>
-                  <h3 className="font-semibold text-gray-900">Reservations</h3>
-                  <p className="text-gray-600">(555) 123-4567</p>
+                  <h3 className="font-semibold text-gray-900">Bookings</h3>
+                  <p className="text-gray-600">+44 20 7946 0958</p>
                 </div>
               </div>
 
@@ -66,7 +66,7 @@ const RestaurantInfoSection = ({ onBookingClick, selectedRestaurant }: Restauran
                 onClick={onBookingClick}
               >
                 <Calendar className="mr-2 h-5 w-5" />
-                Make a Reservation
+                Make a Booking
               </Button>
               <p className="text-sm text-gray-500 text-center">
                 Booking slots available every 30 minutes

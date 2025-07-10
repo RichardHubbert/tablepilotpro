@@ -148,27 +148,9 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, restaurant
 
   const handleSubmit = async () => {
     setSubmitError(null);
-    console.log('🔍 Debug booking data:', {
-      restaurantId: bookingData.restaurantId,
-      restaurant: restaurant,
-      hasRestaurant: !!bookingData.restaurantId,
-      hasDate: !!bookingData.date,
-      hasStartTime: !!bookingData.startTime,
-      hasPartySize: !!bookingData.partySize,
-      hasCustomerName: !!bookingData.customerName,
-      hasCustomerEmail: !!bookingData.customerEmail
-    });
 
     if (!bookingData.restaurantId || !bookingData.date || !bookingData.startTime || !bookingData.partySize || 
         !bookingData.customerName || !bookingData.customerEmail) {
-      console.error('❌ Missing required booking data:', {
-        hasRestaurant: !!bookingData.restaurantId,
-        hasDate: !!bookingData.date,
-        hasStartTime: !!bookingData.startTime,
-        hasPartySize: !!bookingData.partySize,
-        hasCustomerName: !!bookingData.customerName,
-        hasCustomerEmail: !!bookingData.customerEmail
-      });
       toast({
         title: "Missing Information",
         description: "Please fill in all required fields, including restaurant selection",
@@ -180,10 +162,6 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, restaurant
 
     setIsSubmitting(true);
     try {
-      console.log('📝 Submitting booking with data:', {
-        ...bookingData,
-        date: bookingData.date?.toISOString()
-      });
       const result = await createBooking({
         restaurantId: bookingData.restaurantId,
         date: bookingData.date,
@@ -211,14 +189,21 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, restaurant
       
       // Send confirmation email
       console.log('📧 Attempting to send confirmation email...');
-      const emailSent = await sendBookingConfirmationEmail(result);
+      const emailResult = await sendBookingConfirmationEmail(result);
       
-      toast({
-        title: "Booking Confirmed!",
-        description: emailSent 
-          ? "Your table reservation has been successfully created. A confirmation email has been sent to your inbox." 
-          : "Your table reservation has been successfully created. (Email delivery failed)",
-      });
+      if (emailResult.success) {
+        toast({
+          title: "Booking Confirmed!",
+          description: "Your table reservation has been successfully created. A confirmation email has been sent to your inbox.",
+        });
+      } else {
+        console.error('📧 Email failed:', emailResult.error);
+        toast({
+          title: "Booking Confirmed!",
+          description: `Your table reservation has been successfully created. (Email delivery failed: ${emailResult.error})`,
+          variant: "destructive"
+        });
+      }
       
     } catch (error) {
       console.error('💥 Booking submission failed:', error);

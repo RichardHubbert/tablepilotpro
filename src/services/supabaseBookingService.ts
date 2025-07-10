@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { format, addMinutes, isSameDay } from 'date-fns';
+import { sendCustomerToCRM } from './crmService';
 
 export interface Table {
   id: string;
@@ -231,6 +232,32 @@ export const createBooking = async (bookingData: {
     }
     
     console.log('✅ Booking created successfully:', data);
+    
+    // Send customer data to CRM (fire and forget - don't block booking creation)
+    try {
+      console.log('📧 Sending customer data to CRM...');
+      const crmResult = await sendCustomerToCRM({
+        customerName: bookingData.customerName,
+        customerEmail: bookingData.customerEmail,
+        customerPhone: bookingData.customerPhone,
+        specialRequests: bookingData.specialRequests,
+        restaurantId: bookingData.restaurantId,
+        bookingDate: format(bookingData.date, 'yyyy-MM-dd'),
+        startTime: bookingData.startTime,
+        partySize: bookingData.partySize,
+        bookingId: data.id
+      });
+      
+      if (crmResult.success) {
+        console.log('✅ Customer data sent to CRM successfully');
+      } else {
+        console.warn('⚠️ Failed to send customer data to CRM:', crmResult.error);
+      }
+    } catch (crmError) {
+      console.warn('⚠️ Error sending customer data to CRM:', crmError);
+      // Don't throw error - booking was successful, CRM sync is secondary
+    }
+    
     return data as Booking;
   } catch (error) {
     console.error('💥 Booking creation failed:', error);
@@ -257,7 +284,7 @@ export const fetchAllBookings = async (): Promise<Booking[]> => {
   return (data || []).map(booking => ({
     ...booking,
     status: booking.status as 'confirmed' | 'cancelled' | 'completed',
-    restaurant: (booking.restaurant ?? undefined) && typeof booking.restaurant === 'object' && 'id' in booking.restaurant
+    restaurant: (booking.restaurant as any) && typeof booking.restaurant === 'object' && 'id' in booking.restaurant
       ? booking.restaurant as { id: string; name: string; cuisine: string }
       : undefined
   }));

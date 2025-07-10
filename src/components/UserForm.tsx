@@ -157,7 +157,7 @@ const UserForm: React.FC<UserFormProps> = ({
               </SelectContent>
             </Select>
             <div className="text-sm text-gray-500 space-y-1">
-              <p><strong>User:</strong> Can make bookings and view their own reservations</p>
+              <p><strong>User:</strong> Can make bookings and view their own bookings</p>
               <p><strong>Business:</strong> Can manage their own restaurant(s) and view bookings</p>
               <p><strong>Admin:</strong> Full access to all features including user management</p>
             </div>

@@ -81,7 +81,7 @@ const CustomerForm: React.FC<CustomerFormProps> = ({ data, onUpdate }) => {
               <Input
                 id="customerPhone"
                 type="tel"
-                placeholder="(555) 123-4567"
+                placeholder="+44 20 7946 0958"
                 value={data.customerPhone || ''}
                 onChange={(e) => handleInputChange('customerPhone', e.target.value)}
                 className="pl-10"

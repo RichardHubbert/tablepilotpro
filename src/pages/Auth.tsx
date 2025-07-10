@@ -244,7 +244,7 @@ const Auth = () => {
             <CardDescription className="text-gray-600">
               {isLogin 
                 ? 'Sign in to your Bella Vista account' 
-                : 'Join Bella Vista to make reservations'
+                : 'Join Bella Vista to make bookings'
               }
             </CardDescription>
           </CardHeader>
