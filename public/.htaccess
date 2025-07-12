@@ -1,10 +1,10 @@
 RewriteEngine On
-RewriteBase /
+RewriteBase /amicicoffee/
 RewriteRule ^index\.html$ - [L]
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteCond %{REQUEST_FILENAME} !-l
-RewriteRule . /index.html [L]
+RewriteRule . /amicicoffee/index.html [L]
 
 # Enable CORS
 Header set Access-Control-Allow-Origin "*"
@@ -31,7 +31,7 @@ Header set X-XSS-Protection "1; mode=block"
 # Handle React Router - redirect all requests to index.html except for existing files
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule ^(.*)$ index.html [QSA,L]
+RewriteRule ^(.*)$ /amicicoffee/index.html [QSA,L]
 
 # Set correct MIME types for modern web assets
 <IfModule mod_mime.c>

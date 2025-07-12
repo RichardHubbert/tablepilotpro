@@ -18,7 +18,7 @@ const QuickReserveCard = ({ onBookingClick }: QuickReserveCardProps) => {
           className="w-full bg-amber-600 hover:bg-amber-700 text-lg py-3"
           onClick={onBookingClick}
         >
-          Reserve Now
+          Reserve Table
         </Button>
         <p className="text-sm text-gray-500 text-center">
           Booking slots available every 30 minutes

@@ -7,55 +7,100 @@ export type Json =
   | Json[]
 
 export type Database = {
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          operationName?: string
+          query?: string
+          variables?: Json
+          extensions?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
   public: {
     Tables: {
       bookings: {
         Row: {
           booking_date: string
-          created_at: string
+          business_id: string | null
+          created_at: string | null
           customer_email: string
           customer_name: string
           customer_phone: string | null
           end_time: string
           id: string
           party_size: number
+          restaurant_id: string | null
           special_requests: string | null
           start_time: string
-          status: string
-          table_id: string
-          updated_at: string
+          status: string | null
+          table_id: string | null
+          updated_at: string | null
         }
         Insert: {
           booking_date: string
-          created_at?: string
+          business_id?: string | null
+          created_at?: string | null
           customer_email: string
           customer_name: string
           customer_phone?: string | null
           end_time: string
           id?: string
           party_size: number
+          restaurant_id?: string | null
           special_requests?: string | null
           start_time: string
-          status?: string
-          table_id: string
-          updated_at?: string
+          status?: string | null
+          table_id?: string | null
+          updated_at?: string | null
         }
         Update: {
           booking_date?: string
-          created_at?: string
+          business_id?: string | null
+          created_at?: string | null
           customer_email?: string
           customer_name?: string
           customer_phone?: string | null
           end_time?: string
           id?: string
           party_size?: number
+          restaurant_id?: string | null
           special_requests?: string | null
           start_time?: string
-          status?: string
-          table_id?: string
-          updated_at?: string
+          status?: string | null
+          table_id?: string | null
+          updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "bookings_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bookings_restaurant_id_fkey"
+            columns: ["restaurant_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "bookings_table_id_fkey"
             columns: ["table_id"]
@@ -65,634 +110,371 @@ export type Database = {
           },
         ]
       }
-      competitor_analysis: {
+      businesses: {
         Row: {
-          analyzed_at: string | null
-          backlink_count: number | null
-          competitor_url: string
-          domain_authority: number | null
-          id: string
-          page_authority: number | null
-          project_id: string
-          ranking_keywords: number | null
-          social_signals: Json | null
-          top_keywords: Json | null
-        }
-        Insert: {
-          analyzed_at?: string | null
-          backlink_count?: number | null
-          competitor_url: string
-          domain_authority?: number | null
-          id?: string
-          page_authority?: number | null
-          project_id: string
-          ranking_keywords?: number | null
-          social_signals?: Json | null
-          top_keywords?: Json | null
-        }
-        Update: {
-          analyzed_at?: string | null
-          backlink_count?: number | null
-          competitor_url?: string
-          domain_authority?: number | null
-          id?: string
-          page_authority?: number | null
-          project_id?: string
-          ranking_keywords?: number | null
-          social_signals?: Json | null
-          top_keywords?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "competitor_analysis_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "seo_projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      conversations: {
-        Row: {
-          agent_id: string
-          caller_email: string | null
-          caller_name: string | null
-          caller_phone: string | null
-          created_at: string
-          id: string
-          title: string | null
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          agent_id: string
-          caller_email?: string | null
-          caller_name?: string | null
-          caller_phone?: string | null
-          created_at?: string
-          id?: string
-          title?: string | null
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          agent_id?: string
-          caller_email?: string | null
-          caller_name?: string | null
-          caller_phone?: string | null
-          created_at?: string
-          id?: string
-          title?: string | null
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      keyword_analysis: {
-        Row: {
-          competition_level: string | null
-          content_gaps: Json | null
+          address: string | null
+          contact_email: string | null
+          contact_phone: string | null
           created_at: string | null
-          ctr_potential: number | null
+          domain: string | null
           id: string
-          intent_analysis: string | null
-          keyword_id: string
-          project_id: string
-          related_keywords: Json | null
-          seasonal_trends: Json | null
-          serp_features: Json | null
+          is_active: boolean | null
+          logo_url: string | null
+          name: string
+          primary_color: string | null
+          secondary_color: string | null
+          slug: string
           updated_at: string | null
         }
         Insert: {
-          competition_level?: string | null
-          content_gaps?: Json | null
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string | null
-          ctr_potential?: number | null
+          domain?: string | null
           id?: string
-          intent_analysis?: string | null
-          keyword_id: string
-          project_id: string
-          related_keywords?: Json | null
-          seasonal_trends?: Json | null
-          serp_features?: Json | null
+          is_active?: boolean | null
+          logo_url?: string | null
+          name: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          slug: string
           updated_at?: string | null
         }
         Update: {
-          competition_level?: string | null
-          content_gaps?: Json | null
+          address?: string | null
+          contact_email?: string | null
+          contact_phone?: string | null
           created_at?: string | null
-          ctr_potential?: number | null
+          domain?: string | null
           id?: string
-          intent_analysis?: string | null
-          keyword_id?: string
-          project_id?: string
-          related_keywords?: Json | null
-          seasonal_trends?: Json | null
-          serp_features?: Json | null
+          is_active?: boolean | null
+          logo_url?: string | null
+          name?: string
+          primary_color?: string | null
+          secondary_color?: string | null
+          slug?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      customers: {
+        Row: {
+          business_id: string | null
+          created_at: string | null
+          date_of_birth: string | null
+          email: string
+          external_id: string | null
+          first_name: string | null
+          id: string
+          last_booking_date: string | null
+          last_name: string | null
+          phone: string | null
+          preferences: Json | null
+          total_bookings: number | null
+          total_spent: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          business_id?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email: string
+          external_id?: string | null
+          first_name?: string | null
+          id?: string
+          last_booking_date?: string | null
+          last_name?: string | null
+          phone?: string | null
+          preferences?: Json | null
+          total_bookings?: number | null
+          total_spent?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          business_id?: string | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          email?: string
+          external_id?: string | null
+          first_name?: string | null
+          id?: string
+          last_booking_date?: string | null
+          last_name?: string | null
+          phone?: string | null
+          preferences?: Json | null
+          total_bookings?: number | null
+          total_spent?: number | null
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "keyword_analysis_keyword_id_fkey"
-            columns: ["keyword_id"]
+            foreignKeyName: "customers_business_id_fkey"
+            columns: ["business_id"]
             isOneToOne: false
-            referencedRelation: "keyword_rankings"
-            referencedColumns: ["id"]
+            referencedRelation: "business_dashboard"
+            referencedColumns: ["business_id"]
           },
           {
-            foreignKeyName: "keyword_analysis_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: "customers_business_id_fkey"
+            columns: ["business_id"]
             isOneToOne: false
-            referencedRelation: "seo_projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      keyword_rankings: {
-        Row: {
-          difficulty_score: number | null
-          id: string
-          keyword: string
-          position: number | null
-          previous_position: number | null
-          project_id: string
-          search_volume: number | null
-          tracked_at: string | null
-        }
-        Insert: {
-          difficulty_score?: number | null
-          id?: string
-          keyword: string
-          position?: number | null
-          previous_position?: number | null
-          project_id: string
-          search_volume?: number | null
-          tracked_at?: string | null
-        }
-        Update: {
-          difficulty_score?: number | null
-          id?: string
-          keyword?: string
-          position?: number | null
-          previous_position?: number | null
-          project_id?: string
-          search_volume?: number | null
-          tracked_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "keyword_rankings_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "seo_projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      messages: {
-        Row: {
-          conversation_id: string
-          id: string
-          message: string
-          source: string
-          timestamp: string
-        }
-        Insert: {
-          conversation_id: string
-          id?: string
-          message: string
-          source: string
-          timestamp?: string
-        }
-        Update: {
-          conversation_id?: string
-          id?: string
-          message?: string
-          source?: string
-          timestamp?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      page_insights: {
-        Row: {
-          accessibility_score: number | null
-          analyzed_at: string | null
-          broken_links_count: number | null
-          content_quality_score: number | null
-          content_suggestions: Json | null
-          external_links_count: number | null
-          heading_structure_score: number | null
-          id: string
-          image_optimization_score: number | null
-          internal_links_count: number | null
-          load_time: number | null
-          meta_tags_score: number | null
-          mobile_friendly_score: number | null
-          project_id: string
-          technical_issues: Json | null
-          url: string
-        }
-        Insert: {
-          accessibility_score?: number | null
-          analyzed_at?: string | null
-          broken_links_count?: number | null
-          content_quality_score?: number | null
-          content_suggestions?: Json | null
-          external_links_count?: number | null
-          heading_structure_score?: number | null
-          id?: string
-          image_optimization_score?: number | null
-          internal_links_count?: number | null
-          load_time?: number | null
-          meta_tags_score?: number | null
-          mobile_friendly_score?: number | null
-          project_id: string
-          technical_issues?: Json | null
-          url: string
-        }
-        Update: {
-          accessibility_score?: number | null
-          analyzed_at?: string | null
-          broken_links_count?: number | null
-          content_quality_score?: number | null
-          content_suggestions?: Json | null
-          external_links_count?: number | null
-          heading_structure_score?: number | null
-          id?: string
-          image_optimization_score?: number | null
-          internal_links_count?: number | null
-          load_time?: number | null
-          meta_tags_score?: number | null
-          mobile_friendly_score?: number | null
-          project_id?: string
-          technical_issues?: Json | null
-          url?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "page_insights_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "seo_projects"
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]
       }
       profiles: {
         Row: {
+          business_id: string | null
           company_name: string | null
           created_at: string | null
           full_name: string | null
           id: string
-          role: string
+          role: string | null
           updated_at: string | null
           user_id: string
         }
         Insert: {
+          business_id?: string | null
           company_name?: string | null
           created_at?: string | null
           full_name?: string | null
           id?: string
-          role: string
+          role?: string | null
           updated_at?: string | null
           user_id: string
         }
         Update: {
+          business_id?: string | null
           company_name?: string | null
           created_at?: string | null
           full_name?: string | null
           id?: string
-          role?: string
+          role?: string | null
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: []
-      }
-      reservations: {
-        Row: {
-          created_at: string | null
-          end_time: string
-          id: string
-          space_id: string
-          start_time: string
-          status: string
-          total_price: number
-          updated_at: string | null
-          user_id: string
-          user_name: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          end_time: string
-          id?: string
-          space_id: string
-          start_time: string
-          status?: string
-          total_price: number
-          updated_at?: string | null
-          user_id: string
-          user_name?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          end_time?: string
-          id?: string
-          space_id?: string
-          start_time?: string
-          status?: string
-          total_price?: number
-          updated_at?: string | null
-          user_id?: string
-          user_name?: string | null
-        }
         Relationships: [
           {
-            foreignKeyName: "reservations_space_id_fkey"
-            columns: ["space_id"]
-            isOneToOne: false
-            referencedRelation: "spaces"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      seo_projects: {
-        Row: {
-          analysis_frequency: string | null
-          business_id: string
-          created_at: string | null
-          id: string
-          status: string
-          title: string
-          updated_at: string | null
-          url: string
-        }
-        Insert: {
-          analysis_frequency?: string | null
-          business_id: string
-          created_at?: string | null
-          id?: string
-          status?: string
-          title: string
-          updated_at?: string | null
-          url: string
-        }
-        Update: {
-          analysis_frequency?: string | null
-          business_id?: string
-          created_at?: string | null
-          id?: string
-          status?: string
-          title?: string
-          updated_at?: string | null
-          url?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "seo_projects_business_id_fkey"
+            foreignKeyName: "profiles_business_id_fkey"
             columns: ["business_id"]
             isOneToOne: false
-            referencedRelation: "profiles"
+            referencedRelation: "restaurants"
             referencedColumns: ["id"]
           },
         ]
       }
-      seo_reports: {
+      restaurants: {
         Row: {
+          address: string
+          business_id: string | null
           created_at: string | null
+          cuisine: string
+          description: string | null
+          email: string | null
           id: string
-          metrics: Json
-          project_id: string
-          recommendations: Json
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          opening_hours: Json | null
+          phone: string | null
+          rating: number | null
           updated_at: string | null
         }
         Insert: {
+          address: string
+          business_id?: string | null
           created_at?: string | null
+          cuisine: string
+          description?: string | null
+          email?: string | null
           id?: string
-          metrics?: Json
-          project_id: string
-          recommendations?: Json
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          opening_hours?: Json | null
+          phone?: string | null
+          rating?: number | null
           updated_at?: string | null
         }
         Update: {
+          address?: string
+          business_id?: string | null
           created_at?: string | null
+          cuisine?: string
+          description?: string | null
+          email?: string | null
           id?: string
-          metrics?: Json
-          project_id?: string
-          recommendations?: Json
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          opening_hours?: Json | null
+          phone?: string | null
+          rating?: number | null
           updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "seo_reports_project_id_fkey"
-            columns: ["project_id"]
+            foreignKeyName: "restaurants_business_id_fkey"
+            columns: ["business_id"]
             isOneToOne: false
-            referencedRelation: "seo_projects"
+            referencedRelation: "business_dashboard"
+            referencedColumns: ["business_id"]
+          },
+          {
+            foreignKeyName: "restaurants_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
             referencedColumns: ["id"]
           },
         ]
-      }
-      spaces: {
-        Row: {
-          capacity: number | null
-          created_at: string | null
-          description: string | null
-          id: string
-          image_url: string | null
-          name: string
-          price_per_hour: number
-          updated_at: string | null
-        }
-        Insert: {
-          capacity?: number | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          name: string
-          price_per_hour: number
-          updated_at?: string | null
-        }
-        Update: {
-          capacity?: number | null
-          created_at?: string | null
-          description?: string | null
-          id?: string
-          image_url?: string | null
-          name?: string
-          price_per_hour?: number
-          updated_at?: string | null
-        }
-        Relationships: []
       }
       tables: {
         Row: {
           capacity: number
-          created_at: string
+          created_at: string | null
           id: string
           name: string
           section: string
-          updated_at: string
+          updated_at: string | null
         }
         Insert: {
           capacity: number
-          created_at?: string
+          created_at?: string | null
           id?: string
           name: string
           section: string
-          updated_at?: string
+          updated_at?: string | null
         }
         Update: {
           capacity?: number
-          created_at?: string
+          created_at?: string | null
           id?: string
           name?: string
           section?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      restaurants: {
-        Row: {
-          id: string
-          name: string
-          address: string
-          cuisine: string
-          rating: number | null
-          image_url: string | null
-          phone: string | null
-          email: string | null
-          opening_hours: Json | null
-          description: string | null
-          is_active: boolean
-          created_at: string
-          updated_at: string
-        }
-        Insert: {
-          id?: string
-          name: string
-          address: string
-          cuisine: string
-          rating?: number | null
-          image_url?: string | null
-          phone?: string | null
-          email?: string | null
-          opening_hours?: Json | null
-          description?: string | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Update: {
-          id?: string
-          name?: string
-          address?: string
-          cuisine?: string
-          rating?: number | null
-          image_url?: string | null
-          phone?: string | null
-          email?: string | null
-          opening_hours?: Json | null
-          description?: string | null
-          is_active?: boolean
-          created_at?: string
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      url_analysis: {
-        Row: {
-          analyzed_at: string | null
-          id: string
-          indexability: Json | null
-          meta_data: Json | null
-          mobile_friendliness: Json | null
-          performance_metrics: Json | null
-          project_id: string
-          recommendations: Json | null
-          schema_markup: Json | null
-          security_headers: Json | null
-          seo_issues: Json | null
-          social_tags: Json | null
-        }
-        Insert: {
-          analyzed_at?: string | null
-          id?: string
-          indexability?: Json | null
-          meta_data?: Json | null
-          mobile_friendliness?: Json | null
-          performance_metrics?: Json | null
-          project_id: string
-          recommendations?: Json | null
-          schema_markup?: Json | null
-          security_headers?: Json | null
-          seo_issues?: Json | null
-          social_tags?: Json | null
-        }
-        Update: {
-          analyzed_at?: string | null
-          id?: string
-          indexability?: Json | null
-          meta_data?: Json | null
-          mobile_friendliness?: Json | null
-          performance_metrics?: Json | null
-          project_id?: string
-          recommendations?: Json | null
-          schema_markup?: Json | null
-          security_headers?: Json | null
-          seo_issues?: Json | null
-          social_tags?: Json | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "url_analysis_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "seo_projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_settings: {
-        Row: {
-          created_at: string
-          elevenlabs_agent_id: string | null
-          elevenlabs_api_key: string | null
-          id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          elevenlabs_agent_id?: string | null
-          elevenlabs_api_key?: string | null
-          id?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          elevenlabs_agent_id?: string | null
-          elevenlabs_api_key?: string | null
-          id?: string
-          updated_at?: string
-          user_id?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
     }
     Views: {
-      [_ in never]: never
+      business_customer_analytics: {
+        Row: {
+          avg_party_size: number | null
+          business_id: string | null
+          business_name: string | null
+          cancelled_bookings: number | null
+          completed_bookings: number | null
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          first_booking: string | null
+          last_booking: string | null
+          total_bookings: number | null
+          total_guests: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      business_dashboard: {
+        Row: {
+          avg_party_size: number | null
+          business_id: string | null
+          business_name: string | null
+          business_slug: string | null
+          cancelled_bookings: number | null
+          completed_bookings: number | null
+          confirmed_bookings: number | null
+          total_bookings: number | null
+          total_customers: number | null
+          total_restaurants: number | null
+        }
+        Relationships: []
+      }
+      customer_analytics: {
+        Row: {
+          avg_party_size: number | null
+          business_id: string | null
+          business_name: string | null
+          customer_email: string | null
+          customer_name: string | null
+          customer_phone: string | null
+          first_booking: string | null
+          last_booking: string | null
+          total_bookings: number | null
+          total_guests: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bookings_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "restaurants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_business_customers: {
+        Args: { business_slug: string }
+        Returns: {
+          customer_id: string
+          email: string
+          first_name: string
+          last_name: string
+          phone: string
+          total_bookings: number
+          last_booking_date: string
+          created_at: string
+        }[]
+      }
+      get_business_from_domain: {
+        Args: { domain_name: string }
+        Returns: string
+      }
+      get_current_business_id: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_customer_history: {
+        Args: { customer_email: string; business_id?: string }
+        Returns: {
+          booking_id: string
+          booking_date: string
+          start_time: string
+          party_size: number
+          status: string
+          special_requests: string
+          created_at: string
+        }[]
+      }
+      set_business_context: {
+        Args: { business_slug: string }
+        Returns: undefined
+      }
+      sync_customer_from_external: {
+        Args: {
+          p_business_slug: string
+          p_external_id: string
+          p_email: string
+          p_first_name?: string
+          p_last_name?: string
+          p_phone?: string
+          p_date_of_birth?: string
+          p_preferences?: Json
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
@@ -809,7 +591,11 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },
 } as const
+

@@ -15,7 +15,7 @@ interface RestaurantProviderProps {
 // Default Amici Coffee restaurant data
 const defaultRestaurant: Restaurant = {
   id: '24e2799f-60d5-4e3b-bb30-b8049c9ae56d',
-  name: 'Table Pilot Pro',
+  name: 'Amici Coffee',
   address: '123 Fine Dining Street, Downtown District',
   cuisine: 'Coffee & Dining',
   rating: 4.8,

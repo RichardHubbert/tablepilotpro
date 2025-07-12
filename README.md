@@ -1,4 +1,4 @@
-# Table Pilot Pro
+# Amici Coffee
 
 ## Project info
 
@@ -6,7 +6,7 @@
 
 **Production URL**: https://tablepilot.co.uk
 
-**Project Name**: Table Pilot Pro
+**Project Name**: Amici Coffee
 
 ## How can I edit this code?
 

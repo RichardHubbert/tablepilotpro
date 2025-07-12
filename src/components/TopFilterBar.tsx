@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Clock, Users, MapPin, Search } from 'lucide-react';
+import { Calendar, Clock, Users, Search } from 'lucide-react';
 
 interface TopFilterBarProps {
   selectedDate: string;
@@ -8,13 +8,10 @@ interface TopFilterBarProps {
   onTimeChange: (time: string) => void;
   selectedPartySize: string | number;
   onPartySizeChange: (size: string) => void;
-  selectedLocation: string;
-  onLocationChange: (location: string) => void;
-  onSave?: (options: {
+  onReserve: (options: {
     date: string;
     time: string;
     partySize: string | number;
-    location: string;
   }) => void;
 }
 
@@ -60,7 +57,6 @@ const timeSlots = [
 ];
 
 const partySizes = Array.from({ length: 8 }, (_, i) => (i + 1).toString());
-const locations = ["All", "Bedfordshire", "Cambridgeshire", "Hertfordshire"];
 
 const months = [
   { value: 1, label: 'January' },
@@ -84,9 +80,7 @@ const TopFilterBar: React.FC<TopFilterBarProps> = ({
   onTimeChange,
   selectedPartySize,
   onPartySizeChange,
-  selectedLocation,
-  onLocationChange,
-  onSave,
+  onReserve,
 }) => {
   const [selectedMonth, setSelectedMonth] = useState<number>(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
@@ -108,9 +102,7 @@ const TopFilterBar: React.FC<TopFilterBarProps> = ({
   return (
     <div className="w-full bg-gradient-to-r from-amber-50 to-orange-50 shadow-lg py-4 px-6 sticky top-0 z-40 border-b border-amber-200 mt-20">
       <div className="max-w-6xl mx-auto">
-        <div className="w-full flex justify-end mb-1">
-          <span className="text-xs text-amber-700 font-medium">*Coming soon</span>
-        </div>
+
         <div className="flex flex-col md:flex-row items-center justify-center gap-4">
           {/* Date Filter Group */}
           <div className="flex gap-2">
@@ -223,37 +215,16 @@ const TopFilterBar: React.FC<TopFilterBarProps> = ({
             </div>
           </div>
 
-          {/* Location Filter */}
-          <div className="relative group">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <MapPin className="h-5 w-5 text-amber-600" />
-            </div>
-            <select
-              className="appearance-none bg-white border-2 border-amber-200 rounded-lg pl-10 pr-8 py-3 min-w-[160px] text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all duration-200 hover:border-amber-300 shadow-sm"
-              value={selectedLocation}
-              onChange={(e) => onLocationChange(e.target.value === 'All' ? '' : e.target.value)}
-            >
-              <option value="">All Locations</option>
-              <option value="Bedfordshire">Bedfordshire</option>
-              <option value="Cambridgeshire">Cambridgeshire</option>
-              <option value="Hertfordshire">Hertfordshire</option>
-            </select>
-            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-              <svg className="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
-          </div>
+
 
           {/* Search Button */}
           <button
-            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg opacity-50 cursor-not-allowed font-medium relative"
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:from-amber-700 hover:to-orange-700 font-medium relative transition-all duration-200"
             type="button"
-            disabled
-            tabIndex={-1}
+            onClick={() => onReserve({ date: selectedDate, time: selectedTime, partySize: selectedPartySize })}
           >
             <Search className="h-4 w-4" />
-            Find Tables<span className="text-amber-700 ml-1">*</span>
+            Reserve Table
           </button>
         </div>
       </div>

@@ -180,4 +180,59 @@ export const inviteUser = async (email: string, role: UserRole, fullName?: strin
   };
 
   return await createUserProfile(profileData);
+};
+
+// Get all bookings for Amici Coffee (for customer analysis)
+export const getAmiciCoffeeBookings = async (): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('restaurant_id', '24e2799f-60d5-4e3b-bb30-b8049c9ae56d')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching Amici Coffee bookings:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+// Get customer booking history
+export const getCustomerHistory = async (customerEmail: string): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('*')
+    .eq('customer_email', customerEmail)
+    .eq('restaurant_id', '24e2799f-60d5-4e3b-bb30-b8049c9ae56d')
+    .order('booking_date', { ascending: false })
+    .order('start_time', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching customer history:', error);
+    throw error;
+  }
+
+  return data || [];
+};
+
+// Get unique customers for Amici Coffee
+export const getAmiciCoffeeCustomers = async (): Promise<any[]> => {
+  const { data, error } = await supabase
+    .from('bookings')
+    .select('customer_email, customer_name, customer_phone')
+    .eq('restaurant_id', '24e2799f-60d5-4e3b-bb30-b8049c9ae56d')
+    .neq('status', 'cancelled');
+
+  if (error) {
+    console.error('Error fetching Amici Coffee customers:', error);
+    throw error;
+  }
+
+  // Remove duplicates and return unique customers
+  const uniqueCustomers = data?.filter((customer, index, self) => 
+    index === self.findIndex(c => c.customer_email === customer.customer_email)
+  ) || [];
+
+  return uniqueCustomers;
 }; 

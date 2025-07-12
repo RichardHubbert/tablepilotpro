@@ -33,6 +33,14 @@ const NavigationHeader = ({ onBookingClick }: NavigationHeaderProps) => {
     }
   };
 
+  const handleSignIn = () => {
+    navigate('/auth');
+  };
+
+  const handleAdminDashboard = () => {
+    navigate('/admin');
+  };
+
   return (
     <div className="fixed top-0 left-0 right-0 w-full z-50 bg-white border-b flex items-center justify-between px-4 py-3">
       {/* Logo/Brand */}
@@ -41,7 +49,7 @@ const NavigationHeader = ({ onBookingClick }: NavigationHeaderProps) => {
         <div className="w-10 h-10 rounded-full bg-amber-500 flex items-center justify-center shadow-md">
           <span className="text-white font-bold text-lg select-none">TP</span>
         </div>
-        <h1 className="text-2xl font-bold text-gray-900 ml-2">Table Pilot Pro</h1>
+        <h1 className="text-2xl font-bold text-gray-900 ml-2">Amici Coffee</h1>
       </div>
       
       {/* Right side navigation */}
@@ -67,7 +75,7 @@ const NavigationHeader = ({ onBookingClick }: NavigationHeaderProps) => {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => window.location.href = '/admin'}
+              onClick={handleAdminDashboard}
             >
               Admin Dashboard
             </Button>
@@ -76,7 +84,7 @@ const NavigationHeader = ({ onBookingClick }: NavigationHeaderProps) => {
           <Button 
             variant="outline" 
             size="sm"
-            onClick={() => window.location.href = '/auth'}
+            onClick={handleSignIn}
           >
             Sign In
           </Button>

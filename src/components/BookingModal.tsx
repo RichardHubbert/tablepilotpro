@@ -52,60 +52,29 @@ const steps = [
 
 const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, restaurant, initialDate, initialTime, initialPartySize }) => {
   const [currentStep, setCurrentStep] = useState(1);
-  const [bookingData, setBookingData] = useState<Partial<BookingData>>({ restaurantId: '', date: undefined });
+  const [bookingData, setBookingData] = useState<Partial<BookingData>>({ 
+    restaurantId: '24e2799f-60d5-4e3b-bb30-b8049c9ae56d', // Default Amici Coffee restaurant ID
+    date: undefined 
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmationData, setConfirmationData] = useState<BookingData | null>(null);
   const { toast } = useToast();
-  const [counties] = useState(["Bedfordshire", "Cambridgeshire", "Hertfordshire"]);
-  const [selectedCounty, setSelectedCounty] = useState<string>("");
-  const [restaurantOptions, setRestaurantOptions] = useState<Restaurant[]>([]);
+  // Remove selectedCounty, setSelectedCounty, counties, restaurantOptions, fetchAndSetRestaurants, and all logic related to restaurant selection
+  // In renderStepContent, step 1 should only show the DateSelector
   const [submitError, setSubmitError] = useState<string | null>(null);
-
-  // Fetch restaurants when county changes
-  useEffect(() => {
-    const fetchAndSetRestaurants = async () => {
-      const all = await fetchRestaurants();
-      const filtered = selectedCounty ? all.filter(r => r.county && r.county === selectedCounty) : all;
-      setRestaurantOptions(filtered);
-      // If current restaurantId is not in filtered, reset
-      if (!filtered.find(r => r.id === bookingData.restaurantId)) {
-        setBookingData(b => ({ ...b, restaurantId: filtered[0]?.id }));
-      }
-    };
-    fetchAndSetRestaurants();
-  }, [selectedCounty]);
-
-  // Pre-fill county and restaurant if opened from a card
-  useEffect(() => {
-    if (isOpen && restaurant) {
-      setSelectedCounty(restaurant.county || "");
-      // Ensure restaurant is set in booking data
-      setBookingData(prev => ({
-        ...prev,
-        restaurantId: restaurant.id
-      }));
-    }
-  }, [isOpen, restaurant]);
-
-  // When restaurantOptions change, ensure bookingData.restaurantId is a valid UUID
-  useEffect(() => {
-    if (restaurantOptions.length > 0 && !restaurantOptions.find(r => r.id === bookingData.restaurantId)) {
-      setBookingData(b => ({ ...b, restaurantId: restaurantOptions[0].id }));
-    }
-  }, [restaurantOptions]);
 
   // Pre-fill form with initial values from filter selections
   useEffect(() => {
     if (isOpen) {
-      const newBookingData: Partial<BookingData> = {
-        restaurantId: restaurant?.id || bookingData.restaurantId || '',
+      const updatedData: Partial<BookingData> = {
+        restaurantId: '24e2799f-60d5-4e3b-bb30-b8049c9ae56d', // Always use default restaurant
         date: initialDate ? new Date(initialDate) : undefined,
-        startTime: initialTime || undefined,
+        startTime: initialTime || '',
         partySize: initialPartySize ? parseInt(initialPartySize) : undefined,
       };
-      setBookingData(newBookingData);
+      setBookingData(updatedData);
     }
-  }, [isOpen, initialDate, initialTime, initialPartySize, restaurant]);
+  }, [isOpen, initialDate, initialTime, initialPartySize]);
 
   const handleNext = () => {
     if (currentStep < steps.length) {
@@ -121,9 +90,12 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, restaurant
 
   const handleClose = () => {
     setCurrentStep(1);
-    setBookingData({ restaurantId: '', date: undefined });
-    setIsSubmitting(false);
+    setBookingData({ 
+      restaurantId: '24e2799f-60d5-4e3b-bb30-b8049c9ae56d', // Keep default restaurant ID
+      date: undefined 
+    });
     setConfirmationData(null);
+    setSubmitError(null);
     onClose();
   };
 
@@ -149,14 +121,14 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, restaurant
   const handleSubmit = async () => {
     setSubmitError(null);
 
-    if (!bookingData.restaurantId || !bookingData.date || !bookingData.startTime || !bookingData.partySize || 
+    if (!bookingData.date || !bookingData.startTime || !bookingData.partySize || 
         !bookingData.customerName || !bookingData.customerEmail) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all required fields, including restaurant selection",
+        description: "Please fill in all required fields, including date, time, and party size.",
         variant: "destructive"
       });
-      setSubmitError('Please fill in all required fields, including restaurant selection.');
+      setSubmitError('Please fill in all required fields, including date, time, and party size.');
       return;
     }
 
@@ -222,38 +194,10 @@ const BookingModal: React.FC<BookingModalProps> = ({ isOpen, onClose, restaurant
     switch (currentStep) {
       case 1:
         return (
-          <>
-            <div className="mb-4">
-              <label className="block mb-1 font-medium">County</label>
-              <select
-                className="border rounded px-3 py-2 w-full"
-                value={selectedCounty}
-                onChange={e => setSelectedCounty(e.target.value)}
-              >
-                <option value="">Select county</option>
-                {counties.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-            <div className="mb-4">
-              <label className="block mb-1 font-medium">Restaurant</label>
-              <select
-                className="border rounded px-3 py-2 w-full"
-                value={bookingData.restaurantId}
-                onChange={e => setBookingData({ ...bookingData, restaurantId: e.target.value })}
-                required
-              >
-                {restaurantOptions.map(r => (
-                  <option key={r.id} value={r.id}>{r.name}</option>
-                ))}
-              </select>
-            </div>
-            <DateSelector
-              selectedDate={bookingData.date}
-              onDateSelect={date => setBookingData({ ...bookingData, date })}
-            />
-          </>
+          <DateSelector
+            selectedDate={bookingData.date}
+            onDateSelect={date => setBookingData({ ...bookingData, date })}
+          />
         );
       case 2:
         return (

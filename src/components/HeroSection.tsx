@@ -28,7 +28,7 @@ const HeroSection = ({ onBookingClick, selectedRestaurant }: HeroSectionProps) =
           {/* Left Side - Title and Description */}
           <div className="space-y-6 text-white">
             <h1 className="text-4xl md:text-6xl font-bold">
-              {selectedRestaurant?.name || 'Table Pilot Pro'}
+              {selectedRestaurant?.name || 'Amici Coffee'}
               <span className="block text-2xl md:text-3xl text-amber-400 font-normal">
                 {selectedRestaurant?.cuisine || 'Coffee & Dining'}
               </span>
@@ -45,7 +45,7 @@ const HeroSection = ({ onBookingClick, selectedRestaurant }: HeroSectionProps) =
             <p className="text-xl leading-relaxed">
               {selectedRestaurant 
                 ? `Experience ${selectedRestaurant.cuisine.toLowerCase()} cuisine at ${selectedRestaurant.name}. Reserve your table for an unforgettable culinary journey.`
-                : 'Experience artisanal coffee and delicious dining in a warm, welcoming atmosphere. Reserve your table for an unforgettable experience at Table Pilot Pro.'
+                : 'Experience artisanal coffee and delicious dining in a warm, welcoming atmosphere. Reserve your table for an unforgettable experience at Amici Coffee.'
               }
             </p>
             
@@ -56,7 +56,7 @@ const HeroSection = ({ onBookingClick, selectedRestaurant }: HeroSectionProps) =
                 onClick={onBookingClick}
               >
                 <Calendar className="mr-2 h-5 w-5" />
-                Book a Table
+                Reserve Table
               </Button>
               <Button 
                 variant="outline" 
