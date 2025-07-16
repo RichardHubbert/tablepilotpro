@@ -1,76 +1,68 @@
 import React from 'react';
-import { Calendar, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import QuickReserveCard from './QuickReserveCard';
-import { Restaurant } from './RestaurantSelector';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar, Users, Clock, Star } from 'lucide-react';
 
 interface HeroSectionProps {
-  onBookingClick: () => void;
-  selectedRestaurant?: Restaurant;
+  onBookTable: () => void;
 }
 
-const HeroSection = ({ onBookingClick, selectedRestaurant }: HeroSectionProps) => {
+const HeroSection: React.FC<HeroSectionProps> = ({ onBookTable }) => {
   return (
-    <section className="relative min-h-[80vh] flex items-center">
-      {/* Background Image */}
-      <div className="absolute inset-0 z-0">
-        <img
-          src={selectedRestaurant?.imageUrl || "/amicicoffee.jpg"}
-          alt="Amici Coffee background"
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/30"></div>
-      </div>
-      
-      {/* Hero Content */}
-      <div className="relative z-10 container mx-auto px-4">
-        <div className="grid md:grid-cols-2 gap-8 items-center">
-          {/* Left Side - Title and Description */}
-          <div className="space-y-6 text-white">
-            <h1 className="text-4xl md:text-6xl font-bold">
-              {selectedRestaurant?.name || 'Amici Coffee'}
-              <span className="block text-2xl md:text-3xl text-amber-400 font-normal">
-                {selectedRestaurant?.cuisine || 'Coffee & Dining'}
-              </span>
-            </h1>
-            
-            {selectedRestaurant && (
-              <div className="flex items-center gap-2 text-amber-400">
-                <Star className="h-5 w-5 fill-current" />
-                <span className="text-lg font-medium">{selectedRestaurant.rating}</span>
-                <span className="text-sm text-gray-300">• {selectedRestaurant.address}</span>
-              </div>
-            )}
-            
-            <p className="text-xl leading-relaxed">
-              {selectedRestaurant 
-                ? `Experience ${selectedRestaurant.cuisine.toLowerCase()} cuisine at ${selectedRestaurant.name}. Reserve your table for an unforgettable culinary journey.`
-                : 'Experience artisanal coffee and delicious dining in a warm, welcoming atmosphere. Reserve your table for an unforgettable experience at Amici Coffee.'
-              }
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4">
-              <Button 
-                size="lg" 
-                className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
-                onClick={onBookingClick}
-              >
-                <Calendar className="mr-2 h-5 w-5" />
-                Reserve Table
-              </Button>
-              <Button 
-                variant="outline" 
-                size="lg" 
-                className="px-8 py-3 text-lg border-white text-amber-600 hover:bg-white hover:text-gray-900"
-              >
-                View Menu
-              </Button>
-            </div>
+    <section className="relative bg-gradient-to-br from-amber-50 to-orange-100 py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            Welcome to{' '}
+            <span className="text-amber-600">Amici Coffee</span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            Experience the perfect blend of Italian tradition and modern comfort. 
+            Book your table today and enjoy our authentic coffee and cuisine.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <Button 
+              onClick={onBookTable}
+              size="lg" 
+              className="bg-amber-600 hover:bg-amber-700 text-white px-8 py-3 text-lg"
+            >
+              Book a Table
+            </Button>
           </div>
 
-          {/* Right Side - Quick Reserve Card */}
-          <div className="flex justify-end">
-            <QuickReserveCard onBookingClick={onBookingClick} />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <Calendar className="h-8 w-8 text-amber-600 mx-auto mb-2" />
+                <h3 className="font-semibold text-gray-900">Easy Booking</h3>
+                <p className="text-sm text-gray-600">Book your table in seconds</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <Users className="h-8 w-8 text-amber-600 mx-auto mb-2" />
+                <h3 className="font-semibold text-gray-900">Group Friendly</h3>
+                <p className="text-sm text-gray-600">Perfect for any party size</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <Clock className="h-8 w-8 text-amber-600 mx-auto mb-2" />
+                <h3 className="font-semibold text-gray-900">Flexible Times</h3>
+                <p className="text-sm text-gray-600">Choose your preferred time</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="text-center">
+              <CardContent className="pt-6">
+                <Star className="h-8 w-8 text-amber-600 mx-auto mb-2" />
+                <h3 className="font-semibold text-gray-900">Premium Service</h3>
+                <p className="text-sm text-gray-600">Exceptional dining experience</p>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </div>

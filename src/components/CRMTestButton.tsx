@@ -22,7 +22,8 @@ const CRMTestButton: React.FC = () => {
         bookingDate: '2024-01-20',
         startTime: '19:30',
         partySize: 3,
-        bookingId: 'booking-test-' + Date.now()
+        bookingId: 'booking-test-' + Date.now(),
+        businessId: '24e2799f-60d5-4e3b-bb30-b8049c9ae56d' // Add business ID for testing
       };
 
       console.log('🧪 Testing CRM integration with realistic data:', testData);

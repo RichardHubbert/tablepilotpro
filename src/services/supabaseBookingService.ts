@@ -237,6 +237,11 @@ export const createBooking = async (bookingData: {
     // Send customer data to CRM (fire and forget - don't block booking creation)
     try {
       console.log('📧 Sending customer data to CRM...');
+      console.log('🏢 Business ID from booking data:', data.business_id);
+      // Use the correct CRM business ID - this is different from the booking platform business ID
+      // The CRM edge function will map restaurant IDs to CRM business IDs
+      const crmBusinessId = '9c38d437-b6c9-425a-9199-d514007fcb63'; // This is the CRM business ID
+      
       const crmResult = await sendCustomerToCRM({
         customerName: bookingData.customerName,
         customerEmail: bookingData.customerEmail,
@@ -246,7 +251,8 @@ export const createBooking = async (bookingData: {
         bookingDate: format(bookingData.date, 'yyyy-MM-dd'),
         startTime: bookingData.startTime,
         partySize: bookingData.partySize,
-        bookingId: data.id
+        bookingId: data.id,
+        businessId: crmBusinessId // Use the correct CRM business ID
       });
       
       if (crmResult.success) {
@@ -285,7 +291,7 @@ export const fetchAllBookings = async (): Promise<Booking[]> => {
   return (data || []).map(booking => ({
     ...booking,
     status: booking.status as 'confirmed' | 'cancelled' | 'completed',
-    restaurant: (booking.restaurant as any) && typeof booking.restaurant === 'object' && 'id' in booking.restaurant
+    restaurant: booking.restaurant && typeof booking.restaurant === 'object' && 'id' in (booking.restaurant as any)
       ? booking.restaurant as { id: string; name: string; cuisine: string }
       : undefined
   }));

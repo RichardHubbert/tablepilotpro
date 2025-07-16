@@ -129,8 +129,7 @@ const Index = () => {
         <div className="text-center text-gray-500 py-8">No restaurants found.</div>
       )}
       <HeroSection 
-        onBookingClick={() => handleBookingClick()}
-        selectedRestaurant={undefined}
+        onBookTable={() => handleBookingClick()}
       />
       <TableSizesSection />
       <RestaurantInfoSection 

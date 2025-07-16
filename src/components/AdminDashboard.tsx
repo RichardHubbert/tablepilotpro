@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogTitle, DialogFooter } from '@/components/u
 import { fetchRestaurants, Restaurant } from '@/services/restaurantService';
 import { testEmailService } from '@/services/emailService';
 import CRMTestButton from '@/components/CRMTestButton';
+import NewCustomerCRMTestButton from '@/components/NewCustomerCRMTestButton';
 
 const AdminDashboard = () => {
   const { isAdmin } = useAdmin();
@@ -327,7 +328,10 @@ const AdminDashboard = () => {
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-700">CRM Integration Test</h3>
           </div>
-          <CRMTestButton />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CRMTestButton />
+            <NewCustomerCRMTestButton />
+          </div>
         </div>
 
         {/* Tables Overview */}
