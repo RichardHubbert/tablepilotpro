@@ -11,7 +11,7 @@ interface MobileMenuProps {
 const MobileMenu = ({ onBookingClick }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const navigate = useNavigate();
-  const { isAdmin, signedIn, signOut } = useAuth();
+  const { isAdmin, isManager, signedIn, signOut } = useAuth();
 
   const handleBookingClick = () => {
     if (onBookingClick) {
@@ -96,14 +96,14 @@ const MobileMenu = ({ onBookingClick }: MobileMenuProps) => {
 
               {signedIn ? (
                 <>
-                  {isAdmin && (
+                  {isManager && (
                     <Button 
                       variant="ghost" 
                       className="flex items-center text-lg text-gray-800 hover:bg-gray-100 w-full justify-start px-4"
                       onClick={() => handleNavigation('/admin')}
                     >
                       <User className="mr-3 h-5 w-5" />
-                      Admin Dashboard
+                      {isAdmin ? 'Admin Dashboard' : 'Manager Dashboard'}
                     </Button>
                   )}
                   <Button 

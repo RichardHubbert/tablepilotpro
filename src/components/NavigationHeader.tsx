@@ -11,7 +11,7 @@ interface NavigationHeaderProps {
 
 const NavigationHeader = ({ onBookingClick }: NavigationHeaderProps) => {
   const navigate = useNavigate();
-  const { isAdmin, signedIn, signOut } = useAuth();
+  const { isAdmin, isManager, signedIn, signOut } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();
@@ -33,13 +33,13 @@ const NavigationHeader = ({ onBookingClick }: NavigationHeaderProps) => {
         <div className="hidden md:flex items-center gap-4">
           {signedIn ? (
             <>
-              {isAdmin && (
+              {isManager && (
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => navigate('/admin')}
                 >
-                  Admin Dashboard
+                  {isAdmin ? 'Admin Dashboard' : 'Manager Dashboard'}
                 </Button>
               )}
               <Button

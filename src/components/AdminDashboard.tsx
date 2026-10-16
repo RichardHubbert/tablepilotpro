@@ -12,8 +12,10 @@ import { testEmailService } from '@/services/emailService';
 import CRMTestButton from '@/components/CRMTestButton';
 import NewCustomerCRMTestButton from '@/components/NewCustomerCRMTestButton';
 import AdminPasswordCard from '@/components/AdminPasswordCard';
+import { useAuth } from '@/hooks/useAuth';
 
 const AdminDashboard = () => {
+  const { isAdmin, isOwner } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [tables, setTables] = useState<TableType[]>([]);
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
@@ -186,7 +188,7 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto space-y-6 p-4">
-        <AdminPasswordCard />
+        {isOwner && <AdminPasswordCard />}
         {/* Date Selector */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -528,6 +530,7 @@ const AdminDashboard = () => {
           </CardContent>
         </Card>
 
+        {isAdmin && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -542,7 +545,7 @@ const AdminDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">
-                  Manage all users and assign roles (admin, business, user).
+                  Manage all users and assign roles: user, manager, or admin.
                 </p>
               </div>
               <Button 
@@ -555,6 +558,7 @@ const AdminDashboard = () => {
             </div>
           </CardContent>
         </Card>
+        )}
       </div>
       {/* Edit Booking Modal */}
       <Dialog open={!!editingBooking} onOpenChange={open => !open && setEditingBooking(null)}>

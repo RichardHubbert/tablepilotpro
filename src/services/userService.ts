@@ -1,10 +1,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { AppRole, toStoredRole } from '@/lib/roles';
 
 export type User = TablesInsert<'profiles'> & { id: string };
 export type UserUpdate = TablesUpdate<'profiles'>;
 
-export type UserRole = 'admin' | 'business' | 'user';
+export type UserRole = AppRole;
 
 // Fetch all users (admin only)
 export const fetchAllUsers = async (): Promise<User[]> => {
@@ -152,6 +153,7 @@ export const getUserCountByRole = async (): Promise<Record<string, number>> => {
 // cannot call the admin create-user API. Public signup creates the auth row,
 // then the profile is inserted directly.
 export const inviteUser = async (email: string, role: UserRole, fullName?: string, companyName?: string, password?: string): Promise<User> => {
+  const storedRole = toStoredRole(role);
   const signupPassword = password?.trim() ?? '';
   if (signupPassword.length < 6) {
     throw new Error('Password must be at least 6 characters.');
@@ -165,7 +167,7 @@ export const inviteUser = async (email: string, role: UserRole, fullName?: strin
       data: {
         full_name: fullName || '',
         company_name: companyName || '',
-        role,
+        role: storedRole,
       },
     },
   });
@@ -186,7 +188,7 @@ export const inviteUser = async (email: string, role: UserRole, fullName?: strin
       user_id: authUser.id,
       full_name: fullName || '',
       company_name: companyName || '',
-      role,
+      role: storedRole,
     };
 
     if (authUser.identities && authUser.identities.length === 0) {

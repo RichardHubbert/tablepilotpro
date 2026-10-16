@@ -20,6 +20,7 @@ import { User, fetchAllUsers, deleteUser, restoreUser, getUserCountByRole } from
 import UserForm from '@/components/UserForm';
 import NavigationHeader from '@/components/NavigationHeader';
 import { readUserEmails } from '@/lib/userEmails';
+import { roleLabel } from '@/lib/roles';
 
 const UserManagement: React.FC = () => {
   const { toast } = useToast();
@@ -150,6 +151,7 @@ const UserManagement: React.FC = () => {
       case 'admin':
         return <Shield className="h-4 w-4" />;
       case 'business':
+      case 'manager':
         return <Building className="h-4 w-4" />;
       case 'user':
         return <UserIcon className="h-4 w-4" />;
@@ -163,6 +165,7 @@ const UserManagement: React.FC = () => {
       case 'admin':
         return 'bg-red-100 text-red-800';
       case 'business':
+      case 'manager':
         return 'bg-blue-100 text-blue-800';
       case 'user':
         return 'bg-green-100 text-green-800';
@@ -252,8 +255,8 @@ const UserManagement: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Building className="h-5 w-5 text-blue-500" />
               <div>
-                <p className="text-sm text-gray-600">Business</p>
-                <p className="text-2xl font-bold">{userCounts.business || 0}</p>
+                <p className="text-sm text-gray-600">Managers</p>
+                <p className="text-2xl font-bold">{(userCounts.business || 0) + (userCounts.manager || 0)}</p>
               </div>
             </div>
           </CardContent>
@@ -329,7 +332,7 @@ const UserManagement: React.FC = () => {
                           {user.full_name || 'Unnamed User'}
                         </h3>
                         <Badge className={getRoleColor(user.role)}>
-                          {user.role}
+                          {roleLabel(user.role)}
                         </Badge>
                       </div>
                       {user.user_id && readUserEmails()[user.user_id] && (

@@ -11,7 +11,7 @@ import { ADMIN_EMAIL } from '@/lib/admin';
 import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
-  const { loading, isAdmin, signedIn, signIn } = useAuth();
+  const { loading, isManager, signedIn, signIn } = useAuth();
   const [email, setEmail] = useState(ADMIN_EMAIL);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -20,7 +20,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  if (!loading && isAdmin) {
+  if (!loading && isManager) {
     return <Navigate to="/admin" replace />;
   }
 
@@ -34,19 +34,22 @@ const Auth = () => {
 
     try {
       const result = await signIn(email, password);
+      const description = result.role === 'admin'
+        ? 'You are signed in as an administrator.'
+        : result.role === 'manager'
+          ? 'You are signed in as a manager.'
+          : 'You are signed in.';
       toast({
         title: 'Welcome back',
-        description: result.admin
-          ? 'You are signed in as an administrator.'
-          : 'You are signed in.',
+        description,
       });
-      navigate(result.admin ? '/admin' : '/');
+      navigate(result.role === 'user' ? '/' : '/admin');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Sign-in failed.';
       toast({
         title: 'Sign-in failed',
         description: message === 'Invalid login credentials'
-          ? 'That password does not match the administrator account.'
+          ? 'That email and password do not match.'
           : message,
         variant: 'destructive',
       });

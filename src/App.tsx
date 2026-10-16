@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { RestaurantProvider } from "@/contexts/RestaurantContext";
 import { AuthProvider } from "@/hooks/useAuth";
 import RequireAdmin from "@/components/RequireAdmin";
+import RequireManager from "@/components/RequireManager";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
@@ -35,8 +36,8 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
-              <Route path="/admin" element={<RequireAdmin><Admin /></RequireAdmin>} />
-              <Route path="/restaurants" element={<RequireAdmin><RestaurantManagement /></RequireAdmin>} />
+              <Route path="/admin" element={<RequireManager><Admin /></RequireManager>} />
+              <Route path="/restaurants" element={<RequireManager><RestaurantManagement /></RequireManager>} />
               <Route path="/users" element={<RequireAdmin><UserManagement /></RequireAdmin>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

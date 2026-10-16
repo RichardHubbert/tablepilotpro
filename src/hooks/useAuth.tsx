@@ -1,15 +1,18 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ADMIN_SESSION_KEY, isAdminUser, passwordMatchesAdmin } from '@/lib/admin';
+import { AppRole, isManagerRole, toAppRole } from '@/lib/roles';
 import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isOwner: boolean;
   isAdmin: boolean;
+  isManager: boolean;
   signedIn: boolean;
-  signIn: (email: string, password: string) => Promise<{ admin: boolean }>;
+  signIn: (email: string, password: string) => Promise<{ role: AppRole }>;
   signOut: () => Promise<void>;
 }
 
@@ -66,7 +69,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [authLoading, setAuthLoading] = useState(true);
   const [profileRole, setProfileRole] = useState<string | null>(null);
   const [roleReady, setRoleReady] = useState(true);
-  const isAdmin = localAdmin || isAdminUser(user?.email) || profileRole === 'admin';
+  const isOwner = localAdmin || isAdminUser(user?.email);
+  const isAdmin = isOwner || profileRole === 'admin';
+  const isManager = isAdmin || isManagerRole(profileRole);
   const signedIn = localAdmin || !!user;
   const loading = authLoading || (!!user && !localAdmin && !roleReady);
 
@@ -118,12 +123,12 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [user]);
 
-  const signIn = async (email: string, password: string) => {
+  const signIn = async (email: string, password: string): Promise<{ role: AppRole }> => {
     const normalizedEmail = email.trim();
     if (isAdminUser(normalizedEmail) && await passwordMatchesAdmin(password)) {
       localStorage.setItem(ADMIN_SESSION_KEY, '1');
       setLocalAdmin(true);
-      return { admin: true };
+      return { role: 'admin' };
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -139,21 +144,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       if (data.user) {
         await ensureAdminProfile(data.user.id);
       }
-      return { admin: true };
+      return { role: 'admin' };
     }
 
-    let admin = false;
+    let role: AppRole = 'user';
     if (data.user) {
       const { data: profile } = await supabase
         .from('profiles')
         .select('role')
         .eq('user_id', data.user.id)
         .maybeSingle();
-      admin = profile?.role === 'admin';
+      role = toAppRole(profile?.role);
       setProfileRole(profile?.role ?? null);
       setRoleReady(true);
     }
-    return { admin };
+    return { role };
   };
 
   const signOut = async () => {
@@ -163,7 +168,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, signedIn, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isOwner, isAdmin, isManager, signedIn, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

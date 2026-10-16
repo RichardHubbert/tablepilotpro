@@ -5,8 +5,9 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { User, UserRole, updateUser, inviteUser } from '@/services/userService';
+import { User, updateUser, inviteUser } from '@/services/userService';
 import { ADMIN_EMAIL, isAdminUser, saveAdminPassword } from '@/lib/admin';
+import { AppRole, toAppRole, toStoredRole } from '@/lib/roles';
 import { readUserEmails, rememberUserEmail } from '@/lib/userEmails';
 
 interface UserFormProps {
@@ -28,7 +29,7 @@ const UserForm: React.FC<UserFormProps> = ({
     confirmPassword: '',
     full_name: '',
     company_name: '',
-    role: 'user' as UserRole
+    role: 'user' as AppRole
   });
 
   const isEditing = !!user;
@@ -41,7 +42,7 @@ const UserForm: React.FC<UserFormProps> = ({
         confirmPassword: '',
         full_name: user.full_name || '',
         company_name: user.company_name || '',
-        role: (user.role as UserRole) || 'user'
+        role: toAppRole(user.role)
       });
     }
   }, [user]);
@@ -56,7 +57,7 @@ const UserForm: React.FC<UserFormProps> = ({
         await updateUser(user.id, {
           full_name: formData.full_name,
           company_name: formData.company_name,
-          role: formData.role
+          role: toStoredRole(formData.role)
         });
         toast({
           title: "User Updated",
@@ -217,14 +218,14 @@ const UserForm: React.FC<UserFormProps> = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="user">User</SelectItem>
-                <SelectItem value="business">Business</SelectItem>
+                <SelectItem value="manager">Manager</SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
               </SelectContent>
             </Select>
             <div className="text-sm text-gray-500 space-y-1">
-              <p><strong>User:</strong> Can make bookings and view their own bookings</p>
-              <p><strong>Business:</strong> Can manage their own restaurant(s) and view bookings</p>
-              <p><strong>Admin:</strong> Full access to all features including user management</p>
+              <p><strong>User:</strong> Can sign in and make bookings</p>
+              <p><strong>Manager:</strong> Can manage restaurants and bookings</p>
+              <p><strong>Admin:</strong> Can manage users, restaurants, and bookings</p>
             </div>
           </div>
 
