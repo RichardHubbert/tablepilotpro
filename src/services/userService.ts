@@ -148,38 +148,91 @@ export const getUserCountByRole = async (): Promise<Record<string, number>> => {
   return counts;
 };
 
-// Invite a new user (create auth user and profile)
+// Add a user. profiles.user_id must reference auth.users, and the public client
+// cannot call the admin create-user API. Public signup creates the auth row;
+// the database trigger inserts the profile, which we then fill in.
 export const inviteUser = async (email: string, role: UserRole, fullName?: string, companyName?: string): Promise<User> => {
-  // First, create the auth user
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+  const password = `${crypto.randomUUID()}Aa1!`;
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
     email,
-    password: 'temp-password-123', // User will need to reset this
-    email_confirm: true,
-    user_metadata: {
-      full_name: fullName,
-      company_name: companyName,
-      role: role
-    }
+    password,
+    options: {
+      data: {
+        full_name: fullName || '',
+        company_name: companyName || '',
+        role,
+      },
+    },
   });
 
-  if (authError) {
-    console.error('Error creating auth user:', authError);
-    throw authError;
+  if (signUpError) {
+    console.error('Error creating user:', signUpError);
+    throw signUpError;
   }
 
-  if (!authData.user) {
-    throw new Error('Failed to create auth user');
+  const authUser = signUpData.user;
+  if (!authUser) {
+    throw new Error('Failed to create user');
   }
 
-  // Then create the profile
-  const profileData = {
-    user_id: authData.user.id,
+  const profilePayload = {
+    user_id: authUser.id,
     full_name: fullName || '',
     company_name: companyName || '',
-    role: role
+    role,
   };
 
-  return await createUserProfile(profileData);
+  try {
+    if (authUser.identities && authUser.identities.length === 0) {
+      throw new Error('A user with this email already exists');
+    }
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .insert(profilePayload)
+      .select()
+      .single();
+
+    if (!error && data) {
+      return data;
+    }
+
+    // The signup trigger may already have inserted this profile.
+    if (error?.code === '23505') {
+      const { data: updated, error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          full_name: profilePayload.full_name,
+          company_name: profilePayload.company_name,
+          role: profilePayload.role,
+        })
+        .eq('user_id', authUser.id)
+        .select()
+        .maybeSingle();
+
+      if (updateError) {
+        throw updateError;
+      }
+      if (updated) {
+        return updated;
+      }
+
+      const { data: existing, error: readError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', authUser.id)
+        .single();
+
+      if (readError) {
+        throw readError;
+      }
+      return existing;
+    }
+
+    throw error ?? new Error('Failed to create user profile');
+  } finally {
+    await supabase.auth.signOut();
+  }
 };
 
 // Get all bookings for Amici Coffee (for customer analysis)

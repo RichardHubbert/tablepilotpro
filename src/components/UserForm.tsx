@@ -68,8 +68,8 @@ const UserForm: React.FC<UserFormProps> = ({
           formData.company_name
         );
         toast({
-          title: "User Invited",
-          description: "User has been invited successfully. They will receive an email to set their password.",
+          title: "User Added",
+          description: "User has been added successfully.",
         });
       }
 
@@ -97,7 +97,7 @@ const UserForm: React.FC<UserFormProps> = ({
     <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
         <CardTitle>
-          {isEditing ? 'Edit User' : 'Invite New User'}
+          {isEditing ? 'Edit User' : 'Add User'}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -114,7 +114,7 @@ const UserForm: React.FC<UserFormProps> = ({
                 required={!isEditing}
               />
               <p className="text-sm text-gray-500">
-                The user will receive an email invitation to set their password.
+                This email identifies the user. No sign-in is required.
               </p>
             </div>
           )}
@@ -176,7 +176,7 @@ const UserForm: React.FC<UserFormProps> = ({
               type="submit"
               disabled={isLoading}
             >
-              {isLoading ? 'Saving...' : (isEditing ? 'Update User' : 'Invite User')}
+              {isLoading ? 'Saving...' : (isEditing ? 'Update User' : 'Add User')}
             </Button>
           </div>
         </form>

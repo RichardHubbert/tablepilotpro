@@ -176,7 +176,7 @@ const UserManagement: React.FC = () => {
         <header className="bg-white border-b shadow-sm py-3 px-4 md:px-6 sticky top-0 z-10">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-              {editingUser ? 'Edit User' : 'Invite New User'}
+              {editingUser ? 'Edit User' : 'Add User'}
             </h1>
             
             <Button 
@@ -214,7 +214,7 @@ const UserManagement: React.FC = () => {
           </div>
           <Button onClick={handleAddNew} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Invite User
+            Add User
           </Button>
         </div>
 

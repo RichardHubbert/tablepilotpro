@@ -533,7 +533,7 @@ const AdminDashboard = () => {
               User Management
             </CardTitle>
             <CardDescription>
-              Manage users in the system. Invite, edit, or deactivate users.
+              Manage users in the system. Add, edit, or deactivate users.
             </CardDescription>
           </CardHeader>
           <CardContent>
