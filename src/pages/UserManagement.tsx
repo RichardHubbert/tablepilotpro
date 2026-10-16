@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, Eye, EyeOff, Search, Users, Shield, Building, User as UserIcon, LogOut, ArrowLeft } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, EyeOff, Search, Users, Shield, Building, User as UserIcon, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   AlertDialog,
@@ -16,19 +16,14 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useAdmin } from '@/hooks/useAdmin';
-import { useAuth } from '@/hooks/useAuth';
-import { useNavigate } from 'react-router-dom';
 import { User, fetchAllUsers, deleteUser, restoreUser, getUserCountByRole } from '@/services/userService';
 import UserForm from '@/components/UserForm';
-import UserMenu from '@/components/UserMenu';
 import NavigationHeader from '@/components/NavigationHeader';
+import { readUserEmails } from '@/lib/userEmails';
+import { roleLabel } from '@/lib/roles';
 
 const UserManagement: React.FC = () => {
-  const { isAdmin, user } = useAdmin();
-  const { user: authUser, signOut } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
   const [users, setUsers] = useState<User[]>([]);
   const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -38,29 +33,10 @@ const UserManagement: React.FC = () => {
   const [showInactive, setShowInactive] = useState(false);
   const [userCounts, setUserCounts] = useState<Record<string, number>>({});
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      toast({
-        title: "Signed Out",
-        description: "You have been successfully signed out.",
-      });
-      navigate('/');
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign out. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   useEffect(() => {
-    if (isAdmin) {
-      loadUsers();
-      loadUserCounts();
-    }
-  }, [isAdmin]);
+    loadUsers();
+    loadUserCounts();
+  }, []);
 
   useEffect(() => {
     filterUsers();
@@ -103,9 +79,11 @@ const UserManagement: React.FC = () => {
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
+      const emails = readUserEmails();
       filtered = filtered.filter(u =>
         (u.full_name?.toLowerCase().includes(query)) ||
         (u.company_name?.toLowerCase().includes(query)) ||
+        (u.user_id ? emails[u.user_id]?.includes(query) : false) ||
         u.role.toLowerCase().includes(query)
       );
     }
@@ -117,8 +95,8 @@ const UserManagement: React.FC = () => {
     try {
       await deleteUser(user.id);
       toast({
-        title: "User Deleted",
-        description: `${user.full_name || 'User'} has been deactivated.`,
+        title: "User removed",
+        description: `${user.full_name || 'User'} has been removed from the list.`,
       });
       loadUsers();
       loadUserCounts();
@@ -173,6 +151,7 @@ const UserManagement: React.FC = () => {
       case 'admin':
         return <Shield className="h-4 w-4" />;
       case 'business':
+      case 'manager':
         return <Building className="h-4 w-4" />;
       case 'user':
         return <UserIcon className="h-4 w-4" />;
@@ -186,6 +165,7 @@ const UserManagement: React.FC = () => {
       case 'admin':
         return 'bg-red-100 text-red-800';
       case 'business':
+      case 'manager':
         return 'bg-blue-100 text-blue-800';
       case 'user':
         return 'bg-green-100 text-green-800';
@@ -196,106 +176,23 @@ const UserManagement: React.FC = () => {
     }
   };
 
-  if (!isAdmin) {
-    return (
-      <div className="min-h-screen bg-background">
-        {/* Navigation header */}
-        <header className="bg-white border-b shadow-sm py-3 px-4 md:px-6 sticky top-0 z-10">
-          <div className="max-w-7xl mx-auto flex justify-between items-center">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900">User Management</h1>
-            
-            <div className="flex items-center gap-2 md:gap-4">
-              {authUser ? (
-                <>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => window.location.href = '/'}
-                    className="hidden md:flex"
-                  >
-                    Back to Home
-                  </Button>
-                  <UserMenu />
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span className="hidden md:inline">Logout</span>
-                  </Button>
-                </>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => window.location.href = '/auth'}
-                >
-                  Sign In
-                </Button>
-              )}
-            </div>
-          </div>
-        </header>
-
-        <div className="container mx-auto px-4 py-8">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
-                <p className="text-gray-600">
-                  You don't have permission to access this page. Only admin users can manage users.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
   if (showForm) {
     return (
       <div className="min-h-screen bg-background">
-        {/* Navigation header */}
         <header className="bg-white border-b shadow-sm py-3 px-4 md:px-6 sticky top-0 z-10">
           <div className="max-w-7xl mx-auto flex justify-between items-center">
             <h1 className="text-xl md:text-2xl font-bold text-gray-900">
-              {editingUser ? 'Edit User' : 'Invite New User'}
+              {editingUser ? 'Edit User' : 'Add User'}
             </h1>
             
-            <div className="flex items-center gap-2 md:gap-4">
-              {authUser ? (
-                <>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => setShowForm(false)}
-                    className="hidden md:flex"
-                  >
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Users
-                  </Button>
-                  <UserMenu />
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={handleLogout}
-                  >
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span className="hidden md:inline">Logout</span>
-                  </Button>
-                </>
-              ) : (
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => window.location.href = '/auth'}
-                >
-                  Sign In
-                </Button>
-              )}
-            </div>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowForm(false)}
+            >
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to Users
+            </Button>
           </div>
         </header>
 
@@ -318,12 +215,12 @@ const UserManagement: React.FC = () => {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
             <p className="text-gray-600 mt-2">
-              Manage all users in the system. Only visible to admin users.
+              Manage all users in the system.
             </p>
           </div>
           <Button onClick={handleAddNew} className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
-            Invite User
+            Add User
           </Button>
         </div>
 
@@ -358,8 +255,8 @@ const UserManagement: React.FC = () => {
             <div className="flex items-center space-x-2">
               <Building className="h-5 w-5 text-blue-500" />
               <div>
-                <p className="text-sm text-gray-600">Business</p>
-                <p className="text-2xl font-bold">{userCounts.business || 0}</p>
+                <p className="text-sm text-gray-600">Managers</p>
+                <p className="text-2xl font-bold">{(userCounts.business || 0) + (userCounts.manager || 0)}</p>
               </div>
             </div>
           </CardContent>
@@ -435,9 +332,14 @@ const UserManagement: React.FC = () => {
                           {user.full_name || 'Unnamed User'}
                         </h3>
                         <Badge className={getRoleColor(user.role)}>
-                          {user.role}
+                          {roleLabel(user.role)}
                         </Badge>
                       </div>
+                      {user.user_id && readUserEmails()[user.user_id] && (
+                        <p className="text-sm text-gray-600 mb-1">
+                          <strong>Email:</strong> {readUserEmails()[user.user_id]}
+                        </p>
+                      )}
                       {user.company_name && (
                         <p className="text-sm text-gray-600 mb-1">
                           <strong>Company:</strong> {user.company_name}
@@ -468,9 +370,9 @@ const UserManagement: React.FC = () => {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Deactivate User</AlertDialogTitle>
+                            <AlertDialogTitle>Remove user</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to deactivate "{user.full_name || 'this user'}"? This action can be undone.
+                              Remove "{user.full_name || 'this user'}" from the list? You can show inactive users to restore them.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -479,7 +381,7 @@ const UserManagement: React.FC = () => {
                               onClick={() => handleDelete(user)}
                               className="bg-red-600 hover:bg-red-700"
                             >
-                              Deactivate
+                              Remove
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>

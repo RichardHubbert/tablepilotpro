@@ -6,15 +6,16 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { fetchTables, fetchAllBookings, getNextReservationForTable, type Table as TableType, type Booking, updateBooking, deleteBooking } from '@/services/supabaseBookingService';
-import { useAdmin } from '@/hooks/useAdmin';
 import { Dialog, DialogContent, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { fetchRestaurants, Restaurant } from '@/services/restaurantService';
 import { testEmailService } from '@/services/emailService';
 import CRMTestButton from '@/components/CRMTestButton';
 import NewCustomerCRMTestButton from '@/components/NewCustomerCRMTestButton';
+import AdminPasswordCard from '@/components/AdminPasswordCard';
+import { useAuth } from '@/hooks/useAuth';
 
 const AdminDashboard = () => {
-  const { isAdmin } = useAdmin();
+  const { isAdmin, isOwner } = useAuth();
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [tables, setTables] = useState<TableType[]>([]);
   const [allBookings, setAllBookings] = useState<Booking[]>([]);
@@ -187,6 +188,7 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto space-y-6 p-4">
+        {isOwner && <AdminPasswordCard />}
         {/* Date Selector */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
@@ -500,72 +502,62 @@ const AdminDashboard = () => {
           </Card>
         </div>
 
-        {/* Restaurant Management Section - Only for Admin */}
-        {isAdmin && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5" />
-                Restaurant Management
-              </CardTitle>
-              <CardDescription>
-                Manage restaurants in the system. Add, edit, or remove restaurants.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Manage all restaurants that appear in the restaurant selector dropdown.
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Only visible to admin users (richardhubbert@gmail.com)
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => window.location.href = '/restaurants'}
-                  className="flex items-center gap-2"
-                >
-                  <Building2 className="h-4 w-4" />
-                  Manage Restaurants
-                </Button>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Restaurant Management
+            </CardTitle>
+            <CardDescription>
+              Manage restaurants in the system. Add, edit, or remove restaurants.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">
+                  Manage all restaurants that appear in the restaurant selector dropdown.
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <Button 
+                onClick={() => window.location.href = '/restaurants'}
+                className="flex items-center gap-2"
+              >
+                <Building2 className="h-4 w-4" />
+                Manage Restaurants
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
-        {/* User Management Section - Only for Admin */}
         {isAdmin && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
-                User Management
-              </CardTitle>
-              <CardDescription>
-                Manage users in the system. Invite, edit, or deactivate users.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">
-                    Manage all users, assign roles (admin, business, user), and control access.
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Only visible to admin users (richardhubbert@gmail.com)
-                  </p>
-                </div>
-                <Button 
-                  onClick={() => window.location.href = '/users'}
-                  className="flex items-center gap-2"
-                >
-                  <Users className="h-4 w-4" />
-                  Manage Users
-                </Button>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              User Management
+            </CardTitle>
+            <CardDescription>
+              Manage users in the system. Add, edit, or deactivate users.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">
+                  Manage all users and assign roles: user, manager, or admin.
+                </p>
               </div>
-            </CardContent>
-          </Card>
+              <Button 
+                onClick={() => window.location.href = '/users'}
+                className="flex items-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                Manage Users
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
         )}
       </div>
       {/* Edit Booking Modal */}

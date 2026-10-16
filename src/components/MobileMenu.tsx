@@ -1,9 +1,8 @@
 import React from 'react';
-import { Menu, X, Calendar, LogOut, User, Home, Info, Coffee } from 'lucide-react';
+import { Menu, X, Calendar, User, Home, Info, Coffee, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
 
 interface MobileMenuProps {
   onBookingClick?: () => void;
@@ -11,27 +10,8 @@ interface MobileMenuProps {
 
 const MobileMenu = ({ onBookingClick }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
-  const { user, signOut } = useAuth();
-  const { toast } = useToast();
   const navigate = useNavigate();
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      toast({
-        title: "Signed Out",
-        description: "You have been successfully signed out.",
-      });
-      navigate('/');
-      setIsOpen(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign out. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  const { isAdmin, isManager, signedIn, signOut } = useAuth();
 
   const handleBookingClick = () => {
     if (onBookingClick) {
@@ -113,25 +93,29 @@ const MobileMenu = ({ onBookingClick }: MobileMenuProps) => {
                 <Info className="mr-3 h-5 w-5" />
                 About Us
               </Button>
-              
-              {user ? (
+
+              {signedIn ? (
                 <>
+                  {isManager && (
+                    <Button 
+                      variant="ghost" 
+                      className="flex items-center text-lg text-gray-800 hover:bg-gray-100 w-full justify-start px-4"
+                      onClick={() => handleNavigation('/admin')}
+                    >
+                      <User className="mr-3 h-5 w-5" />
+                      {isAdmin ? 'Admin Dashboard' : 'Manager Dashboard'}
+                    </Button>
+                  )}
                   <Button 
                     variant="ghost" 
-                    className="flex items-center text-lg text-gray-800 hover:bg-gray-100 w-full justify-start px-4"
-                    onClick={() => handleNavigation('/admin')}
-                  >
-                    <User className="mr-3 h-5 w-5" />
-                    Admin Dashboard
-                  </Button>
-                  
-                  <Button 
-                    variant="ghost" 
-                    className="flex items-center justify-start text-lg text-red-600"
-                    onClick={handleSignOut}
+                    className="flex items-center text-lg text-red-600 w-full justify-start px-4"
+                    onClick={async () => {
+                      await signOut();
+                      handleNavigation('/');
+                    }}
                   >
                     <LogOut className="mr-3 h-5 w-5" />
-                    Sign Out
+                    Sign out
                   </Button>
                 </>
               ) : (
@@ -141,7 +125,7 @@ const MobileMenu = ({ onBookingClick }: MobileMenuProps) => {
                   onClick={() => handleNavigation('/auth')}
                 >
                   <User className="mr-3 h-5 w-5" />
-                  Sign In
+                  Sign in
                 </Button>
               )}
             </nav>

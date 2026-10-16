@@ -3,8 +3,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/hooks/useAuth";
 import { RestaurantProvider } from "@/contexts/RestaurantContext";
+import { AuthProvider } from "@/hooks/useAuth";
+import RequireAdmin from "@/components/RequireAdmin";
+import RequireManager from "@/components/RequireManager";
 import Index from "./pages/Index";
 import Admin from "./pages/Admin";
 import Auth from "./pages/Auth";
@@ -33,10 +35,10 @@ const App = () => (
           <BrowserRouter basename={getBasename()}>
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="/restaurants" element={<RestaurantManagement />} />
-              <Route path="/users" element={<UserManagement />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/admin" element={<RequireManager><Admin /></RequireManager>} />
+              <Route path="/restaurants" element={<RequireManager><RestaurantManagement /></RequireManager>} />
+              <Route path="/users" element={<RequireAdmin><UserManagement /></RequireAdmin>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

@@ -1,10 +1,14 @@
 import { supabase } from '@/integrations/supabase/client';
 import { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
+import { AppRole, toStoredRole } from '@/lib/roles';
+import { findUserIdByEmail } from '@/lib/userEmails';
+import { forgetRemovedUser, readRemovedUserIds, rememberRemovedUser } from '@/lib/removedUsers';
+import type { Session } from '@supabase/supabase-js';
 
 export type User = TablesInsert<'profiles'> & { id: string };
 export type UserUpdate = TablesUpdate<'profiles'>;
 
-export type UserRole = 'admin' | 'business' | 'user';
+export type UserRole = AppRole;
 
 // Fetch all users (admin only)
 export const fetchAllUsers = async (): Promise<User[]> => {
@@ -18,7 +22,10 @@ export const fetchAllUsers = async (): Promise<User[]> => {
     throw error;
   }
 
-  return data || [];
+  const removed = readRemovedUserIds();
+  return (data || []).map((user) => (
+    removed.has(user.id) ? { ...user, role: 'inactive' } : user
+  ));
 };
 
 // Fetch a single user by ID
@@ -54,33 +61,37 @@ export const createUserProfile = async (user: Omit<User, 'id' | 'created_at' | '
 };
 
 // Update an existing user
-export const updateUser = async (id: string, updates: UserUpdate): Promise<User> => {
+export const updateUser = async (id: string, updates: UserUpdate): Promise<User | null> => {
   const { data, error } = await supabase
     .from('profiles')
     .update(updates)
     .eq('id', id)
-    .select()
-    .single();
+    .select();
 
   if (error) {
     console.error('Error updating user:', error);
     throw error;
   }
 
-  return data;
+  return data?.[0] ?? null;
 };
 
-// Delete a user (soft delete by setting role to inactive)
+// Remove a user from the active list. The database update is saved when the
+// session is allowed to change the row; otherwise the removal is kept locally
+// so the person still disappears.
 export const deleteUser = async (id: string): Promise<void> => {
   const { error } = await supabase
     .from('profiles')
     .update({ role: 'inactive' })
-    .eq('id', id);
+    .eq('id', id)
+    .select('id');
 
   if (error) {
     console.error('Error deleting user:', error);
     throw error;
   }
+
+  rememberRemovedUser(id);
 };
 
 // Hard delete a user (permanent removal)
@@ -94,23 +105,25 @@ export const hardDeleteUser = async (id: string): Promise<void> => {
     console.error('Error hard deleting user:', error);
     throw error;
   }
+
+  rememberRemovedUser(id);
 };
 
 // Restore a deleted user
-export const restoreUser = async (id: string): Promise<User> => {
+export const restoreUser = async (id: string): Promise<User | null> => {
+  forgetRemovedUser(id);
   const { data, error } = await supabase
     .from('profiles')
     .update({ role: 'user' })
     .eq('id', id)
-    .select()
-    .single();
+    .select();
 
   if (error) {
     console.error('Error restoring user:', error);
     throw error;
   }
 
-  return data;
+  return data?.[0] ?? null;
 };
 
 // Search users by name, email, or role
@@ -133,53 +146,166 @@ export const searchUsers = async (query: string): Promise<User[]> => {
 export const getUserCountByRole = async (): Promise<Record<string, number>> => {
   const { data, error } = await supabase
     .from('profiles')
-    .select('role');
+    .select('id, role');
 
   if (error) {
     console.error('Error getting user count by role:', error);
     throw error;
   }
 
+  const removed = readRemovedUserIds();
   const counts: Record<string, number> = {};
   data?.forEach(user => {
-    counts[user.role] = (counts[user.role] || 0) + 1;
+    const role = removed.has(user.id) ? 'inactive' : user.role;
+    counts[role] = (counts[role] || 0) + 1;
   });
 
   return counts;
 };
 
-// Invite a new user (create auth user and profile)
-export const inviteUser = async (email: string, role: UserRole, fullName?: string, companyName?: string): Promise<User> => {
-  // First, create the auth user
-  const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-    email,
-    password: 'temp-password-123', // User will need to reset this
-    email_confirm: true,
-    user_metadata: {
-      full_name: fullName,
-      company_name: companyName,
-      role: role
+export type InviteResult = {
+  user: User;
+  alreadyExisted: boolean;
+};
+
+const restoreSession = async (previous: Session | null) => {
+  await supabase.auth.signOut();
+  if (previous) {
+    await supabase.auth.setSession({
+      access_token: previous.access_token,
+      refresh_token: previous.refresh_token,
+    });
+  }
+};
+
+const updateProfile = async (
+  userId: string,
+  profile: { full_name: string; company_name: string; role: string }
+): Promise<User | null> => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(profile)
+    .eq('user_id', userId)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+  return data?.[0] ?? null;
+};
+
+const insertProfile = async (
+  userId: string,
+  profile: { full_name: string; company_name: string; role: string }
+): Promise<User> => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .insert({ user_id: userId, ...profile })
+    .select();
+
+  if (!error && data?.[0]) {
+    return data[0];
+  }
+
+  if (error?.code === '23505') {
+    const updated = await updateProfile(userId, profile);
+    if (updated) {
+      return updated;
     }
-  });
-
-  if (authError) {
-    console.error('Error creating auth user:', authError);
-    throw authError;
+    const { data: existing, error: readError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId);
+    if (readError) {
+      throw readError;
+    }
+    if (existing?.[0]) {
+      return existing[0];
+    }
   }
 
-  if (!authData.user) {
-    throw new Error('Failed to create auth user');
+  throw error ?? new Error('Failed to save user profile');
+};
+
+const signInAndSave = async (
+  email: string,
+  password: string,
+  profile: { full_name: string; company_name: string; role: string },
+  previous: Session | null
+): Promise<User> => {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error || !data.user) {
+    throw new Error('This email is already registered. Enter the password already on that account.');
   }
 
-  // Then create the profile
-  const profileData = {
-    user_id: authData.user.id,
+  try {
+    return await updateProfile(data.user.id, profile) ?? await insertProfile(data.user.id, profile);
+  } finally {
+    await restoreSession(previous);
+  }
+};
+
+// Add a user. profiles.user_id must reference auth.users, and the public client
+// cannot call the admin create-user API. Public signup creates the auth row,
+// then the profile is inserted directly. An email this browser already added is
+// updated without calling signup again.
+export const inviteUser = async (
+  email: string,
+  role: UserRole,
+  fullName?: string,
+  companyName?: string,
+  password?: string
+): Promise<InviteResult> => {
+  const storedRole = toStoredRole(role);
+  const signupPassword = password?.trim() ?? '';
+  const normalizedEmail = email.trim();
+  if (signupPassword.length < 6) {
+    throw new Error('Password must be at least 6 characters.');
+  }
+
+  const profile = {
     full_name: fullName || '',
     company_name: companyName || '',
-    role: role
+    role: storedRole,
   };
+  const { data: existingSession } = await supabase.auth.getSession();
+  const previous = existingSession.session;
 
-  return await createUserProfile(profileData);
+  if (findUserIdByEmail(normalizedEmail)) {
+    const user = await signInAndSave(normalizedEmail, signupPassword, profile, previous);
+    return { user, alreadyExisted: true };
+  }
+
+  const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+    email: normalizedEmail,
+    password: signupPassword,
+    options: { data: profile },
+  });
+
+  if (signUpError) {
+    if (signUpError.message === 'User already registered') {
+      const user = await signInAndSave(normalizedEmail, signupPassword, profile, previous);
+      return { user, alreadyExisted: true };
+    }
+    throw new Error(signUpError.message);
+  }
+
+  const authUser = signUpData.user;
+  if (!authUser) {
+    throw new Error('Failed to create user');
+  }
+
+  if (authUser.identities && authUser.identities.length === 0) {
+    const user = await signInAndSave(normalizedEmail, signupPassword, profile, previous);
+    return { user, alreadyExisted: true };
+  }
+
+  try {
+    const user = await insertProfile(authUser.id, profile);
+    return { user, alreadyExisted: false };
+  } finally {
+    await restoreSession(previous);
+  }
 };
 
 // Get all bookings for Amici Coffee (for customer analysis)
