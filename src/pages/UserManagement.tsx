@@ -95,8 +95,8 @@ const UserManagement: React.FC = () => {
     try {
       await deleteUser(user.id);
       toast({
-        title: "User Deleted",
-        description: `${user.full_name || 'User'} has been deactivated.`,
+        title: "User removed",
+        description: `${user.full_name || 'User'} has been removed from the list.`,
       });
       loadUsers();
       loadUserCounts();
@@ -370,9 +370,9 @@ const UserManagement: React.FC = () => {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>Deactivate User</AlertDialogTitle>
+                            <AlertDialogTitle>Remove user</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Are you sure you want to deactivate "{user.full_name || 'this user'}"? This action can be undone.
+                              Remove "{user.full_name || 'this user'}" from the list? You can show inactive users to restore them.
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
@@ -381,7 +381,7 @@ const UserManagement: React.FC = () => {
                               onClick={() => handleDelete(user)}
                               className="bg-red-600 hover:bg-red-700"
                             >
-                              Deactivate
+                              Remove
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>

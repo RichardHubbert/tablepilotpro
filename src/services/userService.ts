@@ -2,6 +2,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { AppRole, toStoredRole } from '@/lib/roles';
 import { findUserIdByEmail } from '@/lib/userEmails';
+import { forgetRemovedUser, readRemovedUserIds, rememberRemovedUser } from '@/lib/removedUsers';
 import type { Session } from '@supabase/supabase-js';
 
 export type User = TablesInsert<'profiles'> & { id: string };
@@ -21,7 +22,10 @@ export const fetchAllUsers = async (): Promise<User[]> => {
     throw error;
   }
 
-  return data || [];
+  const removed = readRemovedUserIds();
+  return (data || []).map((user) => (
+    removed.has(user.id) ? { ...user, role: 'inactive' } : user
+  ));
 };
 
 // Fetch a single user by ID
@@ -72,17 +76,22 @@ export const updateUser = async (id: string, updates: UserUpdate): Promise<User 
   return data?.[0] ?? null;
 };
 
-// Delete a user (soft delete by setting role to inactive)
+// Remove a user from the active list. The database update is saved when the
+// session is allowed to change the row; otherwise the removal is kept locally
+// so the person still disappears.
 export const deleteUser = async (id: string): Promise<void> => {
   const { error } = await supabase
     .from('profiles')
     .update({ role: 'inactive' })
-    .eq('id', id);
+    .eq('id', id)
+    .select('id');
 
   if (error) {
     console.error('Error deleting user:', error);
     throw error;
   }
+
+  rememberRemovedUser(id);
 };
 
 // Hard delete a user (permanent removal)
@@ -96,23 +105,25 @@ export const hardDeleteUser = async (id: string): Promise<void> => {
     console.error('Error hard deleting user:', error);
     throw error;
   }
+
+  rememberRemovedUser(id);
 };
 
 // Restore a deleted user
-export const restoreUser = async (id: string): Promise<User> => {
+export const restoreUser = async (id: string): Promise<User | null> => {
+  forgetRemovedUser(id);
   const { data, error } = await supabase
     .from('profiles')
     .update({ role: 'user' })
     .eq('id', id)
-    .select()
-    .single();
+    .select();
 
   if (error) {
     console.error('Error restoring user:', error);
     throw error;
   }
 
-  return data;
+  return data?.[0] ?? null;
 };
 
 // Search users by name, email, or role
@@ -135,16 +146,18 @@ export const searchUsers = async (query: string): Promise<User[]> => {
 export const getUserCountByRole = async (): Promise<Record<string, number>> => {
   const { data, error } = await supabase
     .from('profiles')
-    .select('role');
+    .select('id, role');
 
   if (error) {
     console.error('Error getting user count by role:', error);
     throw error;
   }
 
+  const removed = readRemovedUserIds();
   const counts: Record<string, number> = {};
   data?.forEach(user => {
-    counts[user.role] = (counts[user.role] || 0) + 1;
+    const role = removed.has(user.id) ? 'inactive' : user.role;
+    counts[role] = (counts[role] || 0) + 1;
   });
 
   return counts;
