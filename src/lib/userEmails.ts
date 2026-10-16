@@ -21,3 +21,9 @@ export const rememberUserEmail = (userId: string, email: string): void => {
   emails[userId] = email.trim().toLowerCase();
   localStorage.setItem(USER_EMAILS_KEY, JSON.stringify(emails));
 };
+
+export const findUserIdByEmail = (email: string): string | null => {
+  const target = email.trim().toLowerCase();
+  const match = Object.entries(readUserEmails()).find(([, stored]) => stored === target);
+  return match?.[0] ?? null;
+};

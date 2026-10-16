@@ -81,18 +81,18 @@ const UserForm: React.FC<UserFormProps> = ({
             description: `Sign in as ${ADMIN_EMAIL} with this password.`,
           });
         } else {
-          const created = await inviteUser(
+          const result = await inviteUser(
             formData.email,
             formData.role,
             formData.full_name,
             formData.company_name,
             formData.password
           );
-          if (created.user_id) {
-            rememberUserEmail(created.user_id, formData.email);
+          if (result.user.user_id) {
+            rememberUserEmail(result.user.user_id, formData.email);
           }
           toast({
-            title: "User added",
+            title: result.alreadyExisted ? 'User updated' : 'User added',
             description: `${formData.email.trim()} can sign in with this password.`,
           });
         }
@@ -100,10 +100,17 @@ const UserForm: React.FC<UserFormProps> = ({
 
       onSuccess();
     } catch (error) {
-      console.error('Error saving user:', error);
+      const message = error instanceof Error ? error.message : 'Failed to save user. Please try again.';
+      const expected = message.includes('already registered')
+        || message.includes('at least 6')
+        || message.includes('do not match')
+        || message.includes('Email is required');
+      if (!expected) {
+        console.error('Error saving user:', error);
+      }
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save user. Please try again.",
+        description: message,
         variant: "destructive",
       });
     } finally {

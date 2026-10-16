@@ -1,6 +1,8 @@
 import { supabase } from '@/integrations/supabase/client';
 import { TablesInsert, TablesUpdate } from '@/integrations/supabase/types';
 import { AppRole, toStoredRole } from '@/lib/roles';
+import { findUserIdByEmail } from '@/lib/userEmails';
+import type { Session } from '@supabase/supabase-js';
 
 export type User = TablesInsert<'profiles'> & { id: string };
 export type UserUpdate = TablesUpdate<'profiles'>;
@@ -149,104 +151,148 @@ export const getUserCountByRole = async (): Promise<Record<string, number>> => {
   return counts;
 };
 
+export type InviteResult = {
+  user: User;
+  alreadyExisted: boolean;
+};
+
+const restoreSession = async (previous: Session | null) => {
+  await supabase.auth.signOut();
+  if (previous) {
+    await supabase.auth.setSession({
+      access_token: previous.access_token,
+      refresh_token: previous.refresh_token,
+    });
+  }
+};
+
+const updateProfile = async (
+  userId: string,
+  profile: { full_name: string; company_name: string; role: string }
+): Promise<User | null> => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update(profile)
+    .eq('user_id', userId)
+    .select();
+
+  if (error) {
+    throw error;
+  }
+  return data?.[0] ?? null;
+};
+
+const insertProfile = async (
+  userId: string,
+  profile: { full_name: string; company_name: string; role: string }
+): Promise<User> => {
+  const { data, error } = await supabase
+    .from('profiles')
+    .insert({ user_id: userId, ...profile })
+    .select();
+
+  if (!error && data?.[0]) {
+    return data[0];
+  }
+
+  if (error?.code === '23505') {
+    const updated = await updateProfile(userId, profile);
+    if (updated) {
+      return updated;
+    }
+    const { data: existing, error: readError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('user_id', userId);
+    if (readError) {
+      throw readError;
+    }
+    if (existing?.[0]) {
+      return existing[0];
+    }
+  }
+
+  throw error ?? new Error('Failed to save user profile');
+};
+
+const signInAndSave = async (
+  email: string,
+  password: string,
+  profile: { full_name: string; company_name: string; role: string },
+  previous: Session | null
+): Promise<User> => {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error || !data.user) {
+    throw new Error('This email is already registered. Enter the password already on that account.');
+  }
+
+  try {
+    return await updateProfile(data.user.id, profile) ?? await insertProfile(data.user.id, profile);
+  } finally {
+    await restoreSession(previous);
+  }
+};
+
 // Add a user. profiles.user_id must reference auth.users, and the public client
 // cannot call the admin create-user API. Public signup creates the auth row,
-// then the profile is inserted directly.
-export const inviteUser = async (email: string, role: UserRole, fullName?: string, companyName?: string, password?: string): Promise<User> => {
+// then the profile is inserted directly. An email this browser already added is
+// updated without calling signup again.
+export const inviteUser = async (
+  email: string,
+  role: UserRole,
+  fullName?: string,
+  companyName?: string,
+  password?: string
+): Promise<InviteResult> => {
   const storedRole = toStoredRole(role);
   const signupPassword = password?.trim() ?? '';
+  const normalizedEmail = email.trim();
   if (signupPassword.length < 6) {
     throw new Error('Password must be at least 6 characters.');
   }
 
+  const profile = {
+    full_name: fullName || '',
+    company_name: companyName || '',
+    role: storedRole,
+  };
   const { data: existingSession } = await supabase.auth.getSession();
+  const previous = existingSession.session;
+
+  if (findUserIdByEmail(normalizedEmail)) {
+    const user = await signInAndSave(normalizedEmail, signupPassword, profile, previous);
+    return { user, alreadyExisted: true };
+  }
+
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-    email: email.trim(),
+    email: normalizedEmail,
     password: signupPassword,
-    options: {
-      data: {
-        full_name: fullName || '',
-        company_name: companyName || '',
-        role: storedRole,
-      },
-    },
+    options: { data: profile },
   });
 
   if (signUpError) {
-    console.error('Error creating user:', signUpError);
-    const alreadyRegistered = signUpError.message === 'User already registered';
-    throw new Error(alreadyRegistered ? 'A user with this email already exists.' : signUpError.message);
+    if (signUpError.message === 'User already registered') {
+      const user = await signInAndSave(normalizedEmail, signupPassword, profile, previous);
+      return { user, alreadyExisted: true };
+    }
+    throw new Error(signUpError.message);
+  }
+
+  const authUser = signUpData.user;
+  if (!authUser) {
+    throw new Error('Failed to create user');
+  }
+
+  if (authUser.identities && authUser.identities.length === 0) {
+    const user = await signInAndSave(normalizedEmail, signupPassword, profile, previous);
+    return { user, alreadyExisted: true };
   }
 
   try {
-    const authUser = signUpData.user;
-    if (!authUser) {
-      throw new Error('Failed to create user');
-    }
-
-    const profilePayload = {
-      user_id: authUser.id,
-      full_name: fullName || '',
-      company_name: companyName || '',
-      role: storedRole,
-    };
-
-    if (authUser.identities && authUser.identities.length === 0) {
-      throw new Error('A user with this email already exists');
-    }
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .insert(profilePayload)
-      .select()
-      .single();
-
-    if (!error && data) {
-      return data;
-    }
-
-    // The signup trigger may already have inserted this profile.
-    if (error?.code === '23505') {
-      const { data: updated, error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          full_name: profilePayload.full_name,
-          company_name: profilePayload.company_name,
-          role: profilePayload.role,
-        })
-        .eq('user_id', authUser.id)
-        .select()
-        .maybeSingle();
-
-      if (updateError) {
-        throw updateError;
-      }
-      if (updated) {
-        return updated;
-      }
-
-      const { data: existing, error: readError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('user_id', authUser.id)
-        .single();
-
-      if (readError) {
-        throw readError;
-      }
-      return existing;
-    }
-
-    throw error ?? new Error('Failed to create user profile');
+    const user = await insertProfile(authUser.id, profile);
+    return { user, alreadyExisted: false };
   } finally {
-    await supabase.auth.signOut();
-    const previous = existingSession.session;
-    if (previous) {
-      await supabase.auth.setSession({
-        access_token: previous.access_token,
-        refresh_token: previous.refresh_token,
-      });
-    }
+    await restoreSession(previous);
   }
 };
 
