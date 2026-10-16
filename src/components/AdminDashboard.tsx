@@ -11,6 +11,7 @@ import { fetchRestaurants, Restaurant } from '@/services/restaurantService';
 import { testEmailService } from '@/services/emailService';
 import CRMTestButton from '@/components/CRMTestButton';
 import NewCustomerCRMTestButton from '@/components/NewCustomerCRMTestButton';
+import AdminPasswordCard from '@/components/AdminPasswordCard';
 
 const AdminDashboard = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -185,6 +186,7 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto space-y-6 p-4">
+        <AdminPasswordCard />
         {/* Date Selector */}
         <div className="bg-white rounded-lg shadow p-6">
           <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4">

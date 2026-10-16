@@ -5,7 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { User, UserRole, createUserProfile, updateUser, inviteUser } from '@/services/userService';
+import { User, UserRole, updateUser, inviteUser } from '@/services/userService';
+import { ADMIN_EMAIL, isAdminUser, saveAdminPassword } from '@/lib/admin';
 
 interface UserFormProps {
   user?: User;
@@ -22,6 +23,7 @@ const UserForm: React.FC<UserFormProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
+    password: '',
     full_name: '',
     company_name: '',
     role: 'user' as UserRole
@@ -32,7 +34,8 @@ const UserForm: React.FC<UserFormProps> = ({
   useEffect(() => {
     if (user) {
       setFormData({
-        email: '', // Email is not stored in profiles table
+        email: '',
+        password: '',
         full_name: user.full_name || '',
         company_name: user.company_name || '',
         role: (user.role as UserRole) || 'user'
@@ -61,16 +64,28 @@ const UserForm: React.FC<UserFormProps> = ({
         if (!formData.email) {
           throw new Error('Email is required for new users');
         }
-        await inviteUser(
-          formData.email,
-          formData.role,
-          formData.full_name,
-          formData.company_name
-        );
-        toast({
-          title: "User Added",
-          description: "User has been added successfully.",
-        });
+        if (formData.password.length < 6) {
+          throw new Error('Password must be at least 6 characters.');
+        }
+        if (isAdminUser(formData.email)) {
+          await saveAdminPassword(formData.password);
+          toast({
+            title: "Administrator saved",
+            description: `Sign in as ${ADMIN_EMAIL} with this password.`,
+          });
+        } else {
+          await inviteUser(
+            formData.email,
+            formData.role,
+            formData.full_name,
+            formData.company_name,
+            formData.password
+          );
+          toast({
+            title: "User Added",
+            description: "User has been added successfully.",
+          });
+        }
       }
 
       onSuccess();
@@ -114,8 +129,22 @@ const UserForm: React.FC<UserFormProps> = ({
                 required={!isEditing}
               />
               <p className="text-sm text-gray-500">
-                This email identifies the user. No sign-in is required.
+                Use {ADMIN_EMAIL} to update the administrator password without calling Supabase.
               </p>
+            </div>
+          )}
+
+          {!isEditing && (
+            <div className="space-y-2">
+              <Label htmlFor="password">Password *</Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => handleInputChange('password', e.target.value)}
+                autoComplete="new-password"
+                required={!isEditing}
+              />
             </div>
           )}
 
