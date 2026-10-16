@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button';
 import MobileMenu from '@/components/MobileMenu';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { isAdminUser } from '@/lib/admin';
 
 interface NavigationHeaderProps {
   onBookingClick?: () => void;
@@ -12,8 +11,7 @@ interface NavigationHeaderProps {
 
 const NavigationHeader = ({ onBookingClick }: NavigationHeaderProps) => {
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-  const signedIn = isAdminUser(user?.email);
+  const { isAdmin: signedIn, signOut } = useAuth();
 
   const handleSignOut = async () => {
     await signOut();

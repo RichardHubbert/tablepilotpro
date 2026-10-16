@@ -1,12 +1,13 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { isAdminUser } from '@/lib/admin';
+import { ADMIN_SESSION_KEY, isAdminUser, passwordMatchesAdmin } from '@/lib/admin';
 import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
+  isAdmin: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -49,10 +50,20 @@ const ensureAdminProfile = async (userId: string) => {
   }
 };
 
+const readLocalAdmin = () => {
+  try {
+    return localStorage.getItem(ADMIN_SESSION_KEY) === '1';
+  } catch {
+    return false;
+  }
+};
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
+  const [localAdmin, setLocalAdmin] = useState(readLocalAdmin);
   const [loading, setLoading] = useState(true);
+  const isAdmin = localAdmin || isAdminUser(user?.email);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -73,8 +84,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   const signIn = async (email: string, password: string) => {
+    const normalizedEmail = email.trim();
+    if (isAdminUser(normalizedEmail) && await passwordMatchesAdmin(password)) {
+      localStorage.setItem(ADMIN_SESSION_KEY, '1');
+      setLocalAdmin(true);
+      return;
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+      email: normalizedEmail,
       password,
     });
 
@@ -93,11 +111,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const signOut = async () => {
+    localStorage.removeItem(ADMIN_SESSION_KEY);
+    setLocalAdmin(false);
     await supabase.auth.signOut();
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

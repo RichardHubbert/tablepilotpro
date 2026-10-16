@@ -1,9 +1,8 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { isAdminUser } from '@/lib/admin';
 
 const RequireAdmin = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = useAuth();
+  const { isAdmin, loading } = useAuth();
 
   if (loading) {
     return (
@@ -13,7 +12,7 @@ const RequireAdmin = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  if (!isAdminUser(user?.email)) {
+  if (!isAdmin) {
     return <Navigate to="/auth" replace />;
   }
 

@@ -3,7 +3,6 @@ import { Menu, X, Calendar, User, Home, Info, Coffee, LogOut } from 'lucide-reac
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { isAdminUser } from '@/lib/admin';
 
 interface MobileMenuProps {
   onBookingClick?: () => void;
@@ -12,8 +11,7 @@ interface MobileMenuProps {
 const MobileMenu = ({ onBookingClick }: MobileMenuProps) => {
   const [isOpen, setIsOpen] = React.useState(false);
   const navigate = useNavigate();
-  const { user, signOut } = useAuth();
-  const signedIn = isAdminUser(user?.email);
+  const { isAdmin: signedIn, signOut } = useAuth();
 
   const handleBookingClick = () => {
     if (onBookingClick) {

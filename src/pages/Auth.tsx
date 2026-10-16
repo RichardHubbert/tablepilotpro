@@ -7,11 +7,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { ADMIN_EMAIL, isAdminUser } from '@/lib/admin';
+import { ADMIN_EMAIL } from '@/lib/admin';
 import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
-  const { user, loading, signIn } = useAuth();
+  const { loading, isAdmin, signIn } = useAuth();
   const [email, setEmail] = useState(ADMIN_EMAIL);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -20,7 +20,7 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  if (!loading && isAdminUser(user?.email)) {
+  if (!loading && isAdmin) {
     return <Navigate to="/admin" replace />;
   }
 
@@ -40,7 +40,7 @@ const Auth = () => {
       toast({
         title: 'Sign-in failed',
         description: message === 'Invalid login credentials'
-          ? 'That password does not match this account. Use the reset link in your email to choose a new one. The browser also logs this rejection as a 400.'
+          ? 'That password does not match the administrator account.'
           : message,
         variant: 'destructive',
       });
