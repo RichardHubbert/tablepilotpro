@@ -40,7 +40,7 @@ const Auth = () => {
       toast({
         title: 'Sign-in failed',
         description: message === 'Invalid login credentials'
-          ? 'That email and password do not match the administrator account.'
+          ? 'That password does not match this account. Use the reset link in your email to choose a new one. The browser also logs this rejection as a 400.'
           : message,
         variant: 'destructive',
       });
