@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/hooks/use-toast';
 import { User, updateUser, inviteUser } from '@/services/userService';
 import { ADMIN_EMAIL, isAdminUser, saveAdminPassword } from '@/lib/admin';
+import { saveUserPassword } from '@/lib/passwords';
 import { AppRole, toAppRole, toStoredRole } from '@/lib/roles';
 import { readUserEmails, rememberUserEmail } from '@/lib/userEmails';
 
@@ -53,15 +54,17 @@ const UserForm: React.FC<UserFormProps> = ({
 
     try {
       if (isEditing && user) {
-        // Update existing user
+        const passwordChanged = await applyPassword(formData, user.user_id);
         await updateUser(user.id, {
           full_name: formData.full_name,
           company_name: formData.company_name,
           role: toStoredRole(formData.role)
         });
         toast({
-          title: "User Updated",
-          description: "User has been updated successfully.",
+          title: passwordChanged ? 'Password updated' : 'User updated',
+          description: passwordChanged
+            ? `${formData.email.trim()} can sign in with the new password.`
+            : 'User has been updated successfully.',
         });
       } else {
         // Create new user (invite)
@@ -76,6 +79,7 @@ const UserForm: React.FC<UserFormProps> = ({
         }
         if (isAdminUser(formData.email)) {
           await saveAdminPassword(formData.password);
+          await saveUserPassword(formData.email, formData.password);
           toast({
             title: "Administrator saved",
             description: `Sign in as ${ADMIN_EMAIL} with this password.`,
@@ -91,6 +95,7 @@ const UserForm: React.FC<UserFormProps> = ({
           if (result.user.user_id) {
             rememberUserEmail(result.user.user_id, formData.email);
           }
+          await saveUserPassword(formData.email, formData.password);
           toast({
             title: result.alreadyExisted ? 'User updated' : 'User added',
             description: `${formData.email.trim()} can sign in with this password.`,
@@ -118,6 +123,34 @@ const UserForm: React.FC<UserFormProps> = ({
     }
   };
 
+  const knownEmail = user?.user_id ? readUserEmails()[user.user_id] || '' : '';
+
+  const applyPassword = async (
+    values: { email: string; password: string; confirmPassword: string },
+    userId?: string
+  ) => {
+    if (!values.password && !values.confirmPassword) {
+      return false;
+    }
+    if (!values.email.trim()) {
+      throw new Error('Email is required to set a password.');
+    }
+    if (values.password.length < 6) {
+      throw new Error('Password must be at least 6 characters.');
+    }
+    if (values.password !== values.confirmPassword) {
+      throw new Error('Passwords do not match.');
+    }
+    await saveUserPassword(values.email, values.password);
+    if (isAdminUser(values.email)) {
+      await saveAdminPassword(values.password);
+    }
+    if (userId) {
+      rememberUserEmail(userId, values.email);
+    }
+    return true;
+  };
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -131,15 +164,14 @@ const UserForm: React.FC<UserFormProps> = ({
         <CardTitle>
           {isEditing ? 'Edit User' : 'Add User'}
         </CardTitle>
-        {!isEditing && (
-          <CardDescription>
-            Add a person with the email address and password they will use to sign in.
-          </CardDescription>
-        )}
+        <CardDescription>
+          {isEditing
+            ? 'Set a new password for this user or admin. Leave the password blank to keep the current one.'
+            : 'Add a person with the email address and password they will use to sign in.'}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {(!isEditing || formData.email) && (
           <div className="space-y-2">
             <Label htmlFor="email">Email Address{isEditing ? '' : ' *'}</Label>
             <Input
@@ -149,48 +181,45 @@ const UserForm: React.FC<UserFormProps> = ({
               onChange={(e) => handleInputChange('email', e.target.value)}
               placeholder="user@example.com"
               required={!isEditing}
-              readOnly={isEditing}
-              disabled={isEditing}
+              readOnly={isEditing && !!knownEmail}
+              disabled={isEditing && !!knownEmail}
             />
-            {!isEditing && (
-              <p className="text-sm text-gray-500">
-                This is the email address they will use to sign in.
-              </p>
-            )}
+            <p className="text-sm text-gray-500">
+              This is the email address they use to sign in.
+            </p>
           </div>
-          )}
 
-          {!isEditing && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="password">Password *</Label>
+                <Label htmlFor="password">{isEditing ? 'New password' : 'Password *'}</Label>
                 <Input
                   id="password"
                   type="password"
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   autoComplete="new-password"
-                  required
+                  required={!isEditing}
                   minLength={6}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirm-password">Confirm password *</Label>
+                <Label htmlFor="confirm-password">{isEditing ? 'Confirm new password' : 'Confirm password *'}</Label>
                 <Input
                   id="confirm-password"
                   type="password"
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   autoComplete="new-password"
-                  required
+                  required={!isEditing}
                   minLength={6}
                 />
               </div>
               <p className="text-sm text-gray-500 md:col-span-2">
-                Use at least 6 characters. They sign in with this password.
+                {isEditing
+                  ? 'Leave blank to keep the current password. A new password replaces it.'
+                  : 'Use at least 6 characters. They sign in with this password.'}
               </p>
             </div>
-          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">

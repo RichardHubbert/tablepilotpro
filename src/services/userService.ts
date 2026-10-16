@@ -57,20 +57,19 @@ export const createUserProfile = async (user: Omit<User, 'id' | 'created_at' | '
 };
 
 // Update an existing user
-export const updateUser = async (id: string, updates: UserUpdate): Promise<User> => {
+export const updateUser = async (id: string, updates: UserUpdate): Promise<User | null> => {
   const { data, error } = await supabase
     .from('profiles')
     .update(updates)
     .eq('id', id)
-    .select()
-    .single();
+    .select();
 
   if (error) {
     console.error('Error updating user:', error);
     throw error;
   }
 
-  return data;
+  return data?.[0] ?? null;
 };
 
 // Delete a user (soft delete by setting role to inactive)

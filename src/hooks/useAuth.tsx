@@ -1,7 +1,16 @@
 import { useState, useEffect, createContext, useContext } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { ADMIN_SESSION_KEY, isAdminUser, passwordMatchesAdmin } from '@/lib/admin';
+import { findUserIdByEmail } from '@/lib/userEmails';
 import { AppRole, isManagerRole, toAppRole } from '@/lib/roles';
+import {
+  clearLocalAccount,
+  hasPasswordOverride,
+  passwordMatchesUser,
+  readLocalAccount,
+  saveLocalAccount,
+  type LocalAccount,
+} from '@/lib/passwords';
 import type { User, Session } from '@supabase/supabase-js';
 
 interface AuthContextType {
@@ -66,14 +75,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [localAdmin, setLocalAdmin] = useState(readLocalAdmin);
+  const [localAccount, setLocalAccount] = useState<LocalAccount | null>(readLocalAccount);
   const [authLoading, setAuthLoading] = useState(true);
   const [profileRole, setProfileRole] = useState<string | null>(null);
   const [roleReady, setRoleReady] = useState(true);
-  const isOwner = localAdmin || isAdminUser(user?.email);
-  const isAdmin = isOwner || profileRole === 'admin';
-  const isManager = isAdmin || isManagerRole(profileRole);
-  const signedIn = localAdmin || !!user;
-  const loading = authLoading || (!!user && !localAdmin && !roleReady);
+  const isOwner = localAdmin || isAdminUser(user?.email) || isAdminUser(localAccount?.email);
+  const isAdmin = isOwner || profileRole === 'admin' || localAccount?.role === 'admin';
+  const isManager = isAdmin || isManagerRole(profileRole) || isManagerRole(localAccount?.role);
+  const signedIn = localAdmin || !!localAccount || !!user;
+  const loading = authLoading || (!!user && !localAdmin && !localAccount && !roleReady);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -131,6 +141,32 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       return { role: 'admin' };
     }
 
+    if (hasPasswordOverride(normalizedEmail)) {
+      if (!await passwordMatchesUser(normalizedEmail, password)) {
+        throw new Error('That email and password do not match.');
+      }
+
+      const userId = findUserIdByEmail(normalizedEmail);
+      let storedRole = 'user';
+      if (userId) {
+        const { data: profiles } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('user_id', userId);
+        storedRole = profiles?.[0]?.role || 'user';
+      }
+      const account: LocalAccount = {
+        email: normalizedEmail.toLowerCase(),
+        userId,
+        role: storedRole,
+      };
+      saveLocalAccount(account);
+      setLocalAccount(account);
+      setProfileRole(storedRole);
+      setRoleReady(true);
+      return { role: toAppRole(storedRole) };
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email: normalizedEmail,
       password,
@@ -163,7 +199,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const signOut = async () => {
     localStorage.removeItem(ADMIN_SESSION_KEY);
+    clearLocalAccount();
     setLocalAdmin(false);
+    setLocalAccount(null);
+    setProfileRole(null);
     await supabase.auth.signOut();
   };
 
