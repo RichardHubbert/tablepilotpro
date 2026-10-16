@@ -149,8 +149,8 @@ export const getUserCountByRole = async (): Promise<Record<string, number>> => {
 };
 
 // Add a user. profiles.user_id must reference auth.users, and the public client
-// cannot call the admin create-user API. Public signup creates the auth row;
-// the database trigger inserts the profile, which we then fill in.
+// cannot call the admin create-user API. Public signup creates the auth row,
+// then the profile is inserted directly.
 export const inviteUser = async (email: string, role: UserRole, fullName?: string, companyName?: string): Promise<User> => {
   const password = `${crypto.randomUUID()}Aa1!`;
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
