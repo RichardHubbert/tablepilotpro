@@ -5,7 +5,6 @@ import HeroSection from '@/components/HeroSection';
 import TableSizesSection from '@/components/TableSizesSection';
 import RestaurantInfoSection from '@/components/RestaurantInfoSection';
 import TopFilterBar from '@/components/TopFilterBar';
-import { useAuth } from '@/hooks/useAuth';
 import { fetchRestaurants, Restaurant } from '@/services/restaurantService';
 import { fetchTables, fetchBookingsForDate } from '@/services/supabaseBookingService';
 import { addMinutes, format } from 'date-fns';
@@ -14,7 +13,6 @@ import { addMinutes, format } from 'date-fns';
 
 const Index = () => {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
-  const { user } = useAuth();
   const [bookingRestaurant, setBookingRestaurant] = useState<Restaurant | undefined>(undefined);
 
   // Filter bar state

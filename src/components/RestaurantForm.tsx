@@ -74,10 +74,6 @@ const RestaurantForm: React.FC<RestaurantFormProps> = ({
 
     console.log('📂 Upload path:', filePath);
 
-    // Check if user is authenticated
-    const { data: { user } } = await supabase.auth.getUser();
-    console.log('👤 User auth status:', user ? 'Authenticated' : 'Not authenticated');
-
     // Upload the file
     const { error: uploadError, data } = await supabase.storage
       .from('restaurants')

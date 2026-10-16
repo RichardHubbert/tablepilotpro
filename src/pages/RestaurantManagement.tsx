@@ -16,13 +16,11 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useAdmin } from '@/hooks/useAdmin';
 import { Restaurant, fetchAllRestaurants, deleteRestaurant, restoreRestaurant } from '@/services/restaurantService';
 import RestaurantForm from '@/components/RestaurantForm';
 import NavigationHeader from '@/components/NavigationHeader';
 
 const RestaurantManagement: React.FC = () => {
-  const { isAdmin, user } = useAdmin();
   const { toast } = useToast();
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [filteredRestaurants, setFilteredRestaurants] = useState<Restaurant[]>([]);
@@ -33,10 +31,8 @@ const RestaurantManagement: React.FC = () => {
   const [showInactive, setShowInactive] = useState(false);
 
   useEffect(() => {
-    if (isAdmin) {
-      loadRestaurants();
-    }
-  }, [isAdmin]);
+    loadRestaurants();
+  }, []);
 
   useEffect(() => {
     filterRestaurants();
@@ -131,23 +127,6 @@ const RestaurantManagement: React.FC = () => {
     setEditingRestaurant(undefined);
     setShowForm(true);
   };
-
-  if (!isAdmin) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">Access Denied</h2>
-              <p className="text-gray-600">
-                You don't have permission to access this page. Only admin users can manage restaurants.
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   if (showForm) {
     return (
