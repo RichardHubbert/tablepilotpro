@@ -152,9 +152,14 @@ export const getUserCountByRole = async (): Promise<Record<string, number>> => {
 // cannot call the admin create-user API. Public signup creates the auth row,
 // then the profile is inserted directly.
 export const inviteUser = async (email: string, role: UserRole, fullName?: string, companyName?: string, password?: string): Promise<User> => {
-  const signupPassword = password && password.length >= 6 ? password : `${crypto.randomUUID()}Aa1!`;
+  const signupPassword = password?.trim() ?? '';
+  if (signupPassword.length < 6) {
+    throw new Error('Password must be at least 6 characters.');
+  }
+
+  const { data: existingSession } = await supabase.auth.getSession();
   const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-    email,
+    email: email.trim(),
     password: signupPassword,
     options: {
       data: {
@@ -167,22 +172,23 @@ export const inviteUser = async (email: string, role: UserRole, fullName?: strin
 
   if (signUpError) {
     console.error('Error creating user:', signUpError);
-    throw signUpError;
+    const alreadyRegistered = signUpError.message === 'User already registered';
+    throw new Error(alreadyRegistered ? 'A user with this email already exists.' : signUpError.message);
   }
-
-  const authUser = signUpData.user;
-  if (!authUser) {
-    throw new Error('Failed to create user');
-  }
-
-  const profilePayload = {
-    user_id: authUser.id,
-    full_name: fullName || '',
-    company_name: companyName || '',
-    role,
-  };
 
   try {
+    const authUser = signUpData.user;
+    if (!authUser) {
+      throw new Error('Failed to create user');
+    }
+
+    const profilePayload = {
+      user_id: authUser.id,
+      full_name: fullName || '',
+      company_name: companyName || '',
+      role,
+    };
+
     if (authUser.identities && authUser.identities.length === 0) {
       throw new Error('A user with this email already exists');
     }
@@ -232,6 +238,13 @@ export const inviteUser = async (email: string, role: UserRole, fullName?: strin
     throw error ?? new Error('Failed to create user profile');
   } finally {
     await supabase.auth.signOut();
+    const previous = existingSession.session;
+    if (previous) {
+      await supabase.auth.setSession({
+        access_token: previous.access_token,
+        refresh_token: previous.refresh_token,
+      });
+    }
   }
 };
 

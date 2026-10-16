@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { User, UserRole, updateUser, inviteUser } from '@/services/userService';
 import { ADMIN_EMAIL, isAdminUser, saveAdminPassword } from '@/lib/admin';
+import { readUserEmails, rememberUserEmail } from '@/lib/userEmails';
 
 interface UserFormProps {
   user?: User;
@@ -24,6 +25,7 @@ const UserForm: React.FC<UserFormProps> = ({
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     full_name: '',
     company_name: '',
     role: 'user' as UserRole
@@ -34,8 +36,9 @@ const UserForm: React.FC<UserFormProps> = ({
   useEffect(() => {
     if (user) {
       setFormData({
-        email: '',
+        email: user.user_id ? readUserEmails()[user.user_id] || '' : '',
         password: '',
+        confirmPassword: '',
         full_name: user.full_name || '',
         company_name: user.company_name || '',
         role: (user.role as UserRole) || 'user'
@@ -67,6 +70,9 @@ const UserForm: React.FC<UserFormProps> = ({
         if (formData.password.length < 6) {
           throw new Error('Password must be at least 6 characters.');
         }
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('Passwords do not match.');
+        }
         if (isAdminUser(formData.email)) {
           await saveAdminPassword(formData.password);
           toast({
@@ -74,16 +80,19 @@ const UserForm: React.FC<UserFormProps> = ({
             description: `Sign in as ${ADMIN_EMAIL} with this password.`,
           });
         } else {
-          await inviteUser(
+          const created = await inviteUser(
             formData.email,
             formData.role,
             formData.full_name,
             formData.company_name,
             formData.password
           );
+          if (created.user_id) {
+            rememberUserEmail(created.user_id, formData.email);
+          }
           toast({
-            title: "User Added",
-            description: "User has been added successfully.",
+            title: "User added",
+            description: `${formData.email.trim()} can sign in with this password.`,
           });
         }
       }
@@ -114,37 +123,64 @@ const UserForm: React.FC<UserFormProps> = ({
         <CardTitle>
           {isEditing ? 'Edit User' : 'Add User'}
         </CardTitle>
+        {!isEditing && (
+          <CardDescription>
+            Add a person with the email address and password they will use to sign in.
+          </CardDescription>
+        )}
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {!isEditing && (
-            <div className="space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder="user@example.com"
-                required={!isEditing}
-              />
+          {(!isEditing || formData.email) && (
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address{isEditing ? '' : ' *'}</Label>
+            <Input
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => handleInputChange('email', e.target.value)}
+              placeholder="user@example.com"
+              required={!isEditing}
+              readOnly={isEditing}
+              disabled={isEditing}
+            />
+            {!isEditing && (
               <p className="text-sm text-gray-500">
-                Use {ADMIN_EMAIL} to update the administrator password without calling Supabase.
+                This is the email address they will use to sign in.
               </p>
-            </div>
+            )}
+          </div>
           )}
 
           {!isEditing && (
-            <div className="space-y-2">
-              <Label htmlFor="password">Password *</Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                autoComplete="new-password"
-                required={!isEditing}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="password">Password *</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">Confirm password *</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                  autoComplete="new-password"
+                  required
+                  minLength={6}
+                />
+              </div>
+              <p className="text-sm text-gray-500 md:col-span-2">
+                Use at least 6 characters. They sign in with this password.
+              </p>
             </div>
           )}
 

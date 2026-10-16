@@ -11,7 +11,7 @@ import { ADMIN_EMAIL } from '@/lib/admin';
 import { supabase } from '@/integrations/supabase/client';
 
 const Auth = () => {
-  const { loading, isAdmin, signIn } = useAuth();
+  const { loading, isAdmin, signedIn, signIn } = useAuth();
   const [email, setEmail] = useState(ADMIN_EMAIL);
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -24,17 +24,23 @@ const Auth = () => {
     return <Navigate to="/admin" replace />;
   }
 
+  if (!loading && signedIn) {
+    return <Navigate to="/" replace />;
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
 
     try {
-      await signIn(email, password);
+      const result = await signIn(email, password);
       toast({
         title: 'Welcome back',
-        description: 'You are signed in as the administrator.',
+        description: result.admin
+          ? 'You are signed in as an administrator.'
+          : 'You are signed in.',
       });
-      navigate('/admin');
+      navigate(result.admin ? '/admin' : '/');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Sign-in failed.';
       toast({
@@ -79,7 +85,7 @@ const Auth = () => {
         <CardHeader className="text-center space-y-2">
           <CardTitle className="text-2xl font-bold text-gray-900">Administrator sign in</CardTitle>
           <CardDescription>
-            Sign in as {ADMIN_EMAIL} to open the admin dashboard.
+            Sign in with your email address and password.
           </CardDescription>
         </CardHeader>
         <CardContent>

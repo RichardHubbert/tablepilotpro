@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { User, fetchAllUsers, deleteUser, restoreUser, getUserCountByRole } from '@/services/userService';
 import UserForm from '@/components/UserForm';
 import NavigationHeader from '@/components/NavigationHeader';
+import { readUserEmails } from '@/lib/userEmails';
 
 const UserManagement: React.FC = () => {
   const { toast } = useToast();
@@ -77,9 +78,11 @@ const UserManagement: React.FC = () => {
     // Filter by search query
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
+      const emails = readUserEmails();
       filtered = filtered.filter(u =>
         (u.full_name?.toLowerCase().includes(query)) ||
         (u.company_name?.toLowerCase().includes(query)) ||
+        (u.user_id ? emails[u.user_id]?.includes(query) : false) ||
         u.role.toLowerCase().includes(query)
       );
     }
@@ -329,6 +332,11 @@ const UserManagement: React.FC = () => {
                           {user.role}
                         </Badge>
                       </div>
+                      {user.user_id && readUserEmails()[user.user_id] && (
+                        <p className="text-sm text-gray-600 mb-1">
+                          <strong>Email:</strong> {readUserEmails()[user.user_id]}
+                        </p>
+                      )}
                       {user.company_name && (
                         <p className="text-sm text-gray-600 mb-1">
                           <strong>Company:</strong> {user.company_name}

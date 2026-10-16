@@ -8,7 +8,8 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isAdmin: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signedIn: boolean;
+  signIn: (email: string, password: string) => Promise<{ admin: boolean }>;
   signOut: () => Promise<void>;
 }
 
@@ -62,33 +63,67 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [localAdmin, setLocalAdmin] = useState(readLocalAdmin);
-  const [loading, setLoading] = useState(true);
-  const isAdmin = localAdmin || isAdminUser(user?.email);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [profileRole, setProfileRole] = useState<string | null>(null);
+  const [roleReady, setRoleReady] = useState(true);
+  const isAdmin = localAdmin || isAdminUser(user?.email) || profileRole === 'admin';
+  const signedIn = localAdmin || !!user;
+  const loading = authLoading || (!!user && !localAdmin && !roleReady);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, nextSession) => {
         setSession(nextSession);
         setUser(nextSession?.user ?? null);
-        setLoading(false);
+        setAuthLoading(false);
       }
     );
 
     supabase.auth.getSession().then(({ data: { session: existing } }) => {
       setSession(existing);
       setUser(existing?.user ?? null);
-      setLoading(false);
+      setAuthLoading(false);
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  useEffect(() => {
+    if (!user) {
+      setProfileRole(null);
+      setRoleReady(true);
+      return;
+    }
+
+    let cancelled = false;
+    setRoleReady(false);
+    supabase
+      .from('profiles')
+      .select('role')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (cancelled) {
+          return;
+        }
+        if (error) {
+          console.error('Error reading profile role:', error);
+        }
+        setProfileRole(data?.role ?? null);
+        setRoleReady(true);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   const signIn = async (email: string, password: string) => {
     const normalizedEmail = email.trim();
     if (isAdminUser(normalizedEmail) && await passwordMatchesAdmin(password)) {
       localStorage.setItem(ADMIN_SESSION_KEY, '1');
       setLocalAdmin(true);
-      return;
+      return { admin: true };
     }
 
     const { data, error } = await supabase.auth.signInWithPassword({
@@ -100,14 +135,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       throw error;
     }
 
-    if (!isAdminUser(data.user?.email)) {
-      await supabase.auth.signOut();
-      throw new Error('This sign-in is only for the administrator.');
+    if (isAdminUser(data.user?.email)) {
+      if (data.user) {
+        await ensureAdminProfile(data.user.id);
+      }
+      return { admin: true };
     }
 
+    let admin = false;
     if (data.user) {
-      await ensureAdminProfile(data.user.id);
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('user_id', data.user.id)
+        .maybeSingle();
+      admin = profile?.role === 'admin';
+      setProfileRole(profile?.role ?? null);
+      setRoleReady(true);
     }
+    return { admin };
   };
 
   const signOut = async () => {
@@ -117,7 +163,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, isAdmin, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, session, loading, isAdmin, signedIn, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
