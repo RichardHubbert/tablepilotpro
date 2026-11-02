@@ -22,3 +22,8 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local secrets
+temp.env
+# Test pages with keys pasted in
+**/test-frontend.html
